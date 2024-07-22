@@ -1,0 +1,375 @@
+GET http://localhost:3000/user
+### autenticate 
+POST http://localhost:3000/user/authenticate
+Content-Type: application/json
+
+{
+    "correo": "20210672@uthh.edu.mx",
+    "contraseña": "@Ng3l_2021"
+}
+
+
+###
+POST http://localhost:3000/user
+Content-Type: application/json
+
+{
+  "nombre": "Angel Josue",
+  "apellido_Paterno": "Hernandez",
+  "apellido_Materno":"Manuel",
+  "correo":"20210672@uthh.edu.mx",
+  "telefono":"5535518659",
+  "contraseña":"@Ng3l_2021"
+}
+
+###
+POST https://api-rest-2picp4suf-ah5318740-gmailcom.vercel.app/user
+Content-Type: application/json
+
+{
+  "nombre": "John Doe",
+  "apellido_Paterno": "Hernandez",
+  "apellido_Materno":"Cruz",
+  "correo":"2021054@uthh.edu.mx",
+  "telefono":"7712394593",
+  "contraseña":"@Ng3l_2021"
+}
+
+
+###
+GET http://localhost:3000/user/20210672@uthh.edu.mx
+
+
+###
+POST http://localhost:3000/user/2021054@uthh.edu.mx
+
+###
+DELETE http://localhost:3000/user/2021054@uthh.edu.mx
+
+
+###
+GET http://localhost:3000/user/count
+
+###
+GET http://localhost:3000/Antecedente
+
+
+
+### Actualizar el estado de la cuenta
+PUT http://localhost:3000/userCuenta/20210672@uthh.edu.mx
+Content-Type: application/json
+
+{
+      "correo": "20210672@uthh.edu.mx"
+}
+
+
+
+### Activar cuenta
+PUT http://localhost:3000/ActivarCuenta/20210672@uthh.edu.mx
+Content-Type: application/json
+
+{
+      "correo": "20210672@uthh.edu.mx"
+}
+
+### enviar correo
+POST http://localhost:3000/recuperacionCorreo/20210672@uthh.edu.mx
+Content-Type: application/json
+
+{
+    "correo": "20210672@uthh.edu.mx"
+}
+### enviar Token SMS
+POST http://localhost:3000/recuperacionSMS
+Content-Type: application/json
+
+{
+    "correo": "20210672@uthh.edu.mx"
+}
+
+
+### actualizar el estado del token
+
+PUT http://localhost:3000/actualizarToken
+Content-Type: application/json
+
+{
+     "correo": "20210672@uthh.edu.mx"
+}
+
+
+### antecedentesPatologico
+
+POST http://localhost:3000/antecedentesPatologico2
+Content-Type: application/json
+
+{
+     "nombreAntecedente": "diabetes",
+      "fecha_Diacnostico": "2022-04-23",
+      "tratamiento": "insulina",
+      "idH": "1"
+}
+
+### antecedentesPatologico
+
+POST http://localhost:3000/personal/authenticatePersonal
+Content-Type: application/json
+
+{
+  "idIn": "92229300",
+   "contraseña": "@Ng3l_2021"
+      
+}
+
+
+### actualizar la contrase contraseña la recuperacion actualizarContraRecuperacion
+
+PUT http://localhost:3000/actualizarContraRecuperacion/
+Content-Type: application/json
+
+{
+   
+     "correo": "20210672@uthh.edu.mx",
+      "nuevaContraseña": "@Ng3l_2021"
+}
+### comparar el token
+POST http://localhost:3000/compararToken/20210672@uthh.edu.mx
+Content-Type: application/json
+
+{
+    "correo": "20210672@uthh.edu.mx",
+    "tokenUsuario": "7511508"
+}
+
+### enviar correo cuenta bloqueada
+POST http://localhost:3000/notiCorreoCuentaBloqueada/20210672@uthh.edu.mx
+Content-Type: application/json
+
+{
+    "correo": "20210672@uthh.edu.mx"
+}
+
+###
+POST http://localhost:3000/verifyToken
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIInR5cCI6IkpXVCJ9.eyJjb3JyZW8iOiIyMDIxMDY3MkB1dGhoLmVkdS5teCIsIklzQXV0aGVudGljYXRlZCI6dHJ1ZSwicm9sIjoiVU5MIiwibm9tYnJlIjoiQW5nZWwgSm9zdWUiLCJpYXQiOjE3MTA4NzUzNDR9.k4W7SbIP_ndQ0nsA68p8fQa2rTe--0uG5nDxMPk_Dfg"
+
+}
+
+### comparar el token
+POST http://localhost:3000/verificacionTokenIdentificacion/20210672@uthh.edu.mx
+Content-Type: application/json
+
+{
+    "correo": "20210672@uthh.edu.mx",
+    "tokenUsuario": "458375"
+}
+
+### enviar correo
+POST http://localhost:3000/enviarverificacionCorreo/20210672@uthh.edu.mx
+Content-Type: application/json
+
+{
+    "correo": "20210672@uthh.edu.mx"
+}
+
+
+
+
+###
+GET  http://localhost:3000/expedienteID/2
+
+###
+GET  http://localhost:3000/antecedentesID/2
+
+
+###
+GET http://localhost:3000/historialMedicoId/2
+
+
+
+### Actualizar el estado de la cuenta
+PUT http://localhost:3000/userCuenta/pedroreyejj@gmail.com
+Content-Type: application/json
+
+{
+    "correo": "pedroreyejj@gmail.com"
+}
+
+
+### enviar correo
+POST http://localhost:3000/recuperacionCorreo/20210672@uthh.edu.mx
+Content-Type: application/json
+
+{
+    "correo": "20210672@uthh.edu.mx"
+}
+
+
+### actualizar el estado del token
+
+PUT http://localhost:3000/actualizarToken
+Content-Type: application/json
+
+{
+     "correo": "20210672@uthh.edu.mx"
+}
+
+
+### comparar el token
+POST http://localhost:3000/compararToken/20210672@uthh.edu.mx
+Content-Type: application/json
+
+{
+    "correo": "20210672@uthh.edu.mx",
+    "tokenUsuario": "7511508"
+}
+
+### enviar correo cuenta bloqueada
+POST http://localhost:3000/notiCorreoCuentaBloqueada/20210672@uthh.edu.mx
+Content-Type: application/json
+
+{
+    "correo": "20210672@uthh.edu.mx"
+}
+
+
+
+###
+POST http://localhost:3000/registroPersonal
+Content-Type: application/json
+
+{
+  "ID_Asociado": "92229300",
+  "nombre": "Angel Josue",
+  "apellidoP": "Hernandez",
+  "apellidoM":"Manuel",
+  "correo":"20210672@uthh.edu.mx",
+  "contrasena":"@Ng3l_2021",
+  "estado":"sdrtrt",
+  "delegacion":"strtrd",
+  "Id_Cargo":"ADM"
+}
+
+###
+POST http://localhost:3000/antecedentesPatologico
+Content-Type: application/json
+
+{
+  "nombreAntecedente": "prueba",
+  "fecha_Diagnostico": "09-04-2024",
+  "tratamiento":"no"
+}
+
+###
+PUT http://localhost:3000/historialMedico/2
+Content-Type: application/json
+
+{
+  "edad":"21",
+  "Municipio":"Huejutla",
+  "colonia":"santa Irene",
+  "calle":"avenida mexico",
+  "telefono":"7752687850",
+  "nombre_Contacto":"Maria",
+  "apellidoP_Contacto":"Lara",
+  "apellidoM_Contacto":"Mogica",
+  "telefono_Contacto":"7726535874",
+  "alergico_Medicamento":"no"
+}
+
+###
+PUT http://localhost:3000/citasRegistradas
+Content-Type: application/json
+
+{
+  "estado":"Atendido"
+}
+
+###
+PUT http://localhost:3000/actualizarPersonal/789456
+Content-Type: application/json
+
+{
+  "Id_Cargo":"ADM"
+}
+###
+PUT http://localhost:3000/actualizarEstadoPersonal/789456
+Content-Type: application/json
+
+{
+  "estado_Usuario":"Activo"
+}
+
+###
+DELETE http://localhost:3000/eliminarPersonal/4564456
+
+
+
+POST http://localhost:3000/registroPersonal
+Content-Type: application/json
+
+{
+  "ID_Asociado": "92229300",
+  "nombre": "Angel Josue",
+  "apellidoP": "Hernandez",
+  "apellidoM":"Manuel",
+  "correo":"20210672@uthh.edu.mx",
+  "contrasena":"@Ng3l_2021",
+  "estado":"sdrtrt",
+  "delegacion":"strtrd",
+  "Id_Cargo":"ADM"
+}
+
+
+
+###
+POST http://localhost:3000/crearCita
+Content-Type: application/json
+
+{
+    "nombre": "Juan",
+    "apellido_Paterno": "Perez",
+    "apellido_Materno": "Lopez",  
+    "fecha": "2024-07-18",
+    "horario": "17:30:00",
+    "ID_Servicio": "1",
+    "correo": "juan.perez@example.com"
+}
+
+###
+GET https://api-cruz-roja-la-que-sirve.vercel.app/citasHoy
+
+
+###
+
+GET https://apicruzrojalaquesirve.onrender.com/citasHoy
+
+###
+GET http://localhost:3000/citasHoy
+
+###
+GET http://localhost:3000/cita/1
+
+
+
+###
+GET http://localhost:3000/citasHoyRango?horaInicio=10&horaFin=12
+
+
+###
+GET http://localhost:3000/citasLimitadas?limite=1
+
+
+###
+
+
+###
+
+
+###
+
+###
