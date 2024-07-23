@@ -14,12 +14,12 @@ POST http://localhost:3000/user
 Content-Type: application/json
 
 {
-  "nombre": "Angel Josue",
-  "apellido_Paterno": "Hernandez",
-  "apellido_Materno":"Manuel",
-  "correo":"20210672@uthh.edu.mx",
+  "nombre": "Juan Carlos",
+  "apellido_Paterno": "Cifuentes",
+  "apellido_Materno":"Cruz",
+  "correo":"20210654@uthh.edu.mx",
   "telefono":"5535518659",
-  "contraseña":"@Ng3l_2021"
+  "contraseña":"carlos18"
 }
 
 ###
@@ -334,10 +334,10 @@ Content-Type: application/json
     "nombre": "Juan",
     "apellido_Paterno": "Perez",
     "apellido_Materno": "Lopez",  
-    "fecha": "2024-07-18",
-    "horario": "17:30:00",
+    "fecha": "2024-07-23",
+    "horario": "08:50:00",
     "ID_Servicio": "1",
-    "correo": "juan.perez@example.com"
+    "correo": "pedro.perez@example.com"
 }
 
 ###
@@ -365,11 +365,17 @@ GET http://localhost:3000/citasLimitadas?limite=1
 
 
 ###
-
-
+GET http://localhost:3000/citas/correo?correo=pedro.perez@example.com
 ###
 
 
+POST http://localhost:3000/loginUser
+Content-Type: application/json
+
+{
+    "correo": "20210654@uthh.edu.mx",
+    "contrasena": "carlos18"
+}
 ###
 
 ###

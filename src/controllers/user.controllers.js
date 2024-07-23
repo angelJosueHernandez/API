@@ -1011,7 +1011,7 @@ exports.loginUser = async (req, res) => {
             .input("correo", correo)
             .query(querys.actualizarFechaInicioSesion);
       await insertLog( 'Inicio de Sesion ',clientIp, correo,'El usuario paso la primera verificacion de identidad','Login', '200',userId);
-        return res.json({ mensaje: "Autenticación exitosa", nombre: user.nombre, ID_Usuario: userId });
+        return res.json({ mensaje: "Autenticación exitosa", nombre: user.nombre, ID_Usuario: userId, correo: user.correo });
     } else {
         // Si las contraseñas no coinciden
         await insertLog( 'Inicio de Sesion Fallido',clientIp, correo,'Contrasena incorrecta','Login', '401',userId);

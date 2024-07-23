@@ -58,7 +58,8 @@ const {
   getCitasLimitadas,
   getCitasPorFecha,
   getCitasPorFechaYRango,
-  getCitaPorId
+  getCitaPorId,
+  getCitasPorCorreo
 } = require("../controllers/citas.controllers");
 
 
@@ -160,6 +161,7 @@ router.get("/citasLimitadas", getCitasLimitadas);
 router.get("/citasPorFecha", getCitasPorFecha);
 router.get("/citasPorFechaYRango", getCitasPorFechaYRango);
 router.get("/cita/:idCita", getCitaPorId);
+router.get('/citas/correo', getCitasPorCorreo);
 
 
 module.exports =  router;

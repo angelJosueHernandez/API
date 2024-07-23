@@ -348,3 +348,82 @@ exports.getCitaPorId = async (req, res) => {
     res.status(500).json({ error: error.message, stack: error.stack });
   }
 };
+
+
+
+
+
+exports.getCitasPorCorreo = async (req, res) => {
+  const { correo } = req.query;
+
+  if (!correo) {
+    return res.status(400).json({ msg: "Por favor proporcione un correo" });
+  }
+
+  try {
+    const pool = await getConnection();
+    if (!pool) {
+      throw new Error("No se pudo establecer la conexión con la base de datos");
+    }
+
+    const currentDateTimeMexico = moment().tz('America/Mexico_City');
+    const currentDateString = currentDateTimeMexico.format('YYYY-MM-DD');
+    const currentTimeString = currentDateTimeMexico.format('HH:mm:ss');
+
+    console.log("Fecha actual (México):", currentDateString);
+    console.log("Hora actual (México):", currentTimeString);
+
+    const result = await pool.request()
+      .input('correo', sql.VarChar, correo)
+      .query(`
+        SELECT *
+        FROM tbl_Citas
+        WHERE correo = @correo
+          AND (CAST(fecha AS DATE) > '${currentDateString}'
+          OR (CAST(fecha AS DATE) = '${currentDateString}' AND CAST(horario AS TIME) >= '${currentTimeString}'))
+          AND estado = 'Pendiente'
+        ORDER BY fecha, horario
+      `);
+
+    console.log("Resultados de la consulta:", result.recordset);
+
+    if (result.recordset.length === 0) {
+      return res.json({ message: "No hay citas para el correo proporcionado" });
+    } else {
+      const formattedResults = result.recordset.map(cita => {
+        console.log("Fecha original:", cita.fecha);
+        console.log("Horario original:", cita.horario);
+
+        // Procesar la fecha
+        const fechaOriginal = new Date(cita.fecha);
+        const fechaMexico = new Date(fechaOriginal.getTime() + fechaOriginal.getTimezoneOffset() * 60000);
+        const fechaFormateada = fechaMexico.toISOString().split('T')[0];
+
+        // Procesar la hora
+        const horaOriginal = new Date(cita.horario);
+        const horaFormateada = `${String(horaOriginal.getUTCHours()).padStart(2, '0')}:${String(horaOriginal.getUTCMinutes()).padStart(2, '0')}`;
+
+        console.log("Fecha extraída:", fechaFormateada);
+        console.log("Hora extraída:", horaFormateada);
+
+        // Combinar fecha y hora
+        const fechaHoraCombinada = `${fechaFormateada}T${horaFormateada}`;
+
+        // Crear un objeto moment en la zona horaria de México
+        const citaMoment = moment.tz(fechaHoraCombinada, 'America/Mexico_City');
+
+        console.log("Fecha y hora en México:", citaMoment.format('YYYY-MM-DD hh:mm A'));
+
+        return {
+          ...cita,
+          fecha: citaMoment.format('DD/MM/YYYY'),
+          horario: citaMoment.format('hh:mm A')
+        };
+      });
+      return res.json(formattedResults);
+    }
+  } catch (error) {
+    console.error("Error al obtener las citas por correo:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
