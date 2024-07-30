@@ -4,8 +4,8 @@ POST http://localhost:3000/user/authenticate
 Content-Type: application/json
 
 {
-    "correo": "20210672@uthh.edu.mx",
-    "contraseña": "@Ng3l_2021"
+    "correo": "20210654@uthh.edu.mx",
+    "contraseña": "carlos18"
 }
 
 
@@ -331,13 +331,13 @@ POST http://localhost:3000/crearCita
 Content-Type: application/json
 
 {
-    "nombre": "Juan Carlos",
-    "apellido_Paterno": "Hernandez ",
+    "nombre": "Bernardino",
+    "apellido_Paterno": "Alemán ",
     "apellido_Materno":"Hernandez",
-    "fecha": "2024-07-25",
-    "horario": "14:31:00",
+    "fecha": "2024-07-26",
+    "horario": "18:00:00",
     "ID_Servicio": "1",
-    "correo":"20210654@uthh.edu.mx"
+    "correo":"20210672@uthh.edu.mx"
 }
 
 ###
@@ -357,7 +357,7 @@ GET http://localhost:3000/cita/1
 
 
 ###
-GET http://localhost:3000/citasHoyRango?horaInicio=10&horaFin=12
+GET http://localhost:3000/citasHoyRango?horaInicio=12:00:00&horaFin=15:00:00
 
 
 ###
@@ -376,5 +376,5 @@ Content-Type: application/json
     "contrasena": "carlos18"
 }
 ###
-
+GET http://localhost:3000/tiposServicio
 ###

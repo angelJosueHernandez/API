@@ -48,6 +48,8 @@ const {getHistorialMedico,
   updateContactoEmergenciaById,
   updateInfoPerById} =require("../controllers/historialM.controllers");
 
+  const getTiposServicio = require('../controllers/Servicio.controllers').getTiposServicio;
+
 
 const {
   getCitas,
@@ -163,5 +165,8 @@ router.get("/citasPorFechaYRango", getCitasPorFechaYRango);
 router.get("/cita/:idCita", getCitaPorId);
 router.get('/citas/correo', getCitasPorCorreo);
 
+
+
+router.get('/tiposServicio', getTiposServicio);
 
 module.exports =  router;
