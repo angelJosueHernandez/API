@@ -904,7 +904,9 @@ exports.compararTokenVerificacion = async (req, res) => {
       const Token = jwt.sign(paylod, clave);
 
       // Configurar la cookie
+      console.log("cookie enviada"+ Token)
       res.cookie("jwt", Token);
+ 
       await insertLog( 'Inisio de Sesion',clientIp, correo,'El usuario ha pasado el segundo metodo de autentificacion y se ha iniciado correctamente la sesion','Doble Factor', '200',userId);
       res.json({ mensaje: "El token de verificación es válido" });
     } else {
