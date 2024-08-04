@@ -334,8 +334,8 @@ Content-Type: application/json
     "nombre": "Bernardino",
     "apellido_Paterno": "Alemán ",
     "apellido_Materno":"Hernandez",
-    "fecha": "2024-07-26",
-    "horario": "18:00:00",
+    "fecha": "2024-08-07",
+    "horario": "14:00:00",
     "ID_Servicio": "1",
     "correo":"20210672@uthh.edu.mx"
 }
@@ -378,3 +378,15 @@ Content-Type: application/json
 ###
 GET http://localhost:3000/tiposServicio
 ###
+
+GET http://localhost:3000/ambulancias-disponibles
+
+###
+  GET http://localhost:3000/ambulancia/1
+
+
+###
+GET http://localhost:3000/TipoContratacion/EVE
+###
+
+GET http://localhost:3000/servicios-excluidos

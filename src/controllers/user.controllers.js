@@ -894,17 +894,27 @@ exports.compararTokenVerificacion = async (req, res) => {
 
   const user = result2.recordset[0];
 
-      const paylod = {
-          correo: user.correo,
-          IsAuthenticated: true,
-          rol: user.Id_Cargo,
-          nombre: user.nombre
-      };
+
+  const payload = {
+    id: user.ID_Usuario,
+    nombre: user.nombre,
+    correo: user.correo,
+    IsAuthenticated: true,
+    rol: user.Id_Cargo
+  };
+
+
+
+  // Enviar el token en una cookie
+
+  
       const clave = 'APICRUZROJA';
-      const Token = jwt.sign(paylod, clave);
+      const Token = jwt.sign(payload, clave);
 
       // Configurar la cookie
       console.log("cookie enviada"+ Token)
+    // res.cookie('jwt', Token, { httpOnly: true, secure: true });
+  
       res.cookie("jwt", Token);
  
       await insertLog( 'Inisio de Sesion',clientIp, correo,'El usuario ha pasado el segundo metodo de autentificacion y se ha iniciado correctamente la sesion','Doble Factor', '200',userId);
@@ -1023,6 +1033,70 @@ exports.loginUser = async (req, res) => {
   } catch (error) {
     console.error("Error de autenticación:", error);
     await insertLog( 'Inicio de Sesion Fallido',clientIp, correo, clientIp,'Error Autentificacion','Login', '500',userId);
+    return res.status(500).json({ mensaje: "Error de autenticación" });
+  }
+};
+
+
+exports.authenticateUserCarlos = async (req, res) => {
+  const { correo, contraseña } = req.body;
+  const clientIp = req.clientIp;
+  console.log("IP del cliente:", clientIp);
+  let userId;
+
+  try {
+    const pool = await getConnection();
+    const result = await pool.request()
+      .input("correo", sql.VarChar, correo)
+      .query(querys.getUserLogin);
+
+    if (result.recordset.length === 0) {
+      // Si no se encuentra ningún usuario con el correo proporcionado
+      return res.status(401).json({ mensaje: "Este correo no coincide con ningún correo registrado" });
+    }
+
+    const user = result.recordset[0];
+    userId = user.ID_Usuario; // Asignar userId aquí
+    console.log(userId);
+
+    // Verificar si la cuenta está bloqueada
+    if (user.estado_Cuenta === 'Bloqueada') {
+      await insertLog('Inicio de Sesion Fallido', clientIp, correo, 'Cuenta bloqueada', 'Login', '401', userId);
+      return res.status(401).json({ mensaje: "Tu cuenta está bloqueada" });
+    }
+
+    const passwordMatch = await bcrypt.compare(contraseña, user.contrasena);
+    if (passwordMatch) {
+      // Si las contraseñas coinciden, generamos el token
+      const payload = {
+        id: user.ID_Usuario,
+        nombre: user.nombre,
+        correo: user.correo,
+        IsAuthenticated: true,
+        rol: user.Id_Cargo
+      };
+
+      const token = jwt.sign(payload, 'APICRUZROJA', { expiresIn: '1h' });
+
+      // Enviar el token en una cookie
+      res.cookie('jwt', token, { httpOnly: true, secure: true });
+
+      // Actualizar la fecha de inicio de sesión
+      await pool.request()
+        .input("correo", sql.VarChar, correo)
+        .query(querys.actualizarFechaInicioSesion);
+      await insertLog('Inicio de Sesion ', clientIp, correo, 'El usuario paso la primera verificacion de identidad', 'Login', '200', userId);
+      
+      // Devolver la autenticación exitosa junto con el ID del usuario
+      return res.json({ mensaje: "Autenticación exitosa", ID_Usuario: userId });
+    } else {
+      // Si las contraseñas no coinciden
+      await insertLog('Inicio de Sesion Fallido', clientIp, correo, 'Contrasena incorrecta', 'Login', '401', userId);
+      return res.status(401).json({ mensaje: "Contraseña incorrecta" });
+    }
+  } catch (error) {
+    console.error("Error de autenticación:", error);
+    await insertLog('Inicio de Sesion Fallido', clientIp, correo, clientIp, 'Error Autentificacion', 'Login', '500', userId);
     return res.status(500).json({ mensaje: "Error de autenticación" });
   }
 };

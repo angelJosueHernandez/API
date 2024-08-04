@@ -48,7 +48,7 @@ const {getHistorialMedico,
   updateContactoEmergenciaById,
   updateInfoPerById} =require("../controllers/historialM.controllers");
 
-  const getTiposServicio = require('../controllers/Servicio.controllers').getTiposServicio;
+const {getTiposServicio, }= require('../controllers/servicios.controllers');
 
 
 const {
@@ -61,62 +61,53 @@ const {
   getCitasPorFecha,
   getCitasPorFechaYRango,
   getCitaPorId,
-  getCitasPorCorreo
+  getCitasPorCorreo,
+  getHorasDisponiblesPorFecha
 } = require("../controllers/citas.controllers");
+
+const {
+  getTipoContratacion,
+  createNewContratacion2,
+  createNewContratacionSinRegistrar,
+  getAvailableAmbulances,
+  getUserByEmailContratacionAm,
+  enviarCorreoContratacion,
+  getAmbulanciaById,
+  getTipoContratacionById,
+  getServiciosExcluidos
+} = require("../controllers/contratación.controllers");
 
 
 const router = Router();
 
 //////-------------------RUTAS USUARIOS PUBLICOS---------------------------------------------------------
 router.get("/user", getUser);
-
 router.post("/user", createNewUser);
-
 router.post("/user/authenticate", authenticateUser);
-
 router.get("/user/count", getTotalUser);
-
 router.get("/user/:id",getUserById);
-
 router.post("/user/:correo",getComprobarCorreo);
-
 router.post("/user/:contraseña",getComprobarPass);
-
-
 router.delete("/user/:id",deleteUserById);
-
 router.put("/user/:id",updateUserById );
-
 router.put("/userCuenta/:id",updateCuentaEStado );
-
 //  activar la cuenta
 router.put("/ActivarCuenta/:id",activateCuentaId );
-
 // Enviar correo de recuperación de contraseña
 router.post("/recuperacionCorreo/:correo", EnviarCorreoRecuperacion);
 // Enviar correo de recuperación de contraseña mediante SMS
 router.post("/recuperacionSMS", enviarSMSRecuperacion);
-
-
 // Actualizar el estado del token
 router.put("/actualizarToken", actualizarEstadoToken);
-
 router.put("/actualizarContraRecuperacion",updateUserPasswordById);
-
 // Comparar el token de recuperación
 router.post("/compararToken/:correo", compararTokenRecuperacion);
-
 router.post("/notiCorreoCuentaBloqueada/:correo", enviarCorreoBloqueoCuenta);
-
 router.post("/verifyToken", verifyToken);
-
 // Enviar correo de Token de verificacion
 router.post("/enviarverificacionCorreo/:correo", enviarTokenVerificacion);
-
 // Comparar el token de verificacion
 router.post("/verificacionTokenIdentificacion/:correo", compararTokenVerificacion);
-
-
 router.post("/loginUser", loginUser)
 
 
@@ -168,5 +159,20 @@ router.get('/citas/correo', getCitasPorCorreo);
 
 
 router.get('/tiposServicio', getTiposServicio);
+
+
+//Rutas de Contratacion de Ambulancias
+
+router.post("/CrearContratacionSinRegistrar",createNewContratacionSinRegistrar);
+router.post("/CrearContratacion",createNewContratacion2);
+router.get("/tipoContratacion",getTipoContratacion);
+router.get('/ambulancias-disponibles', getAvailableAmbulances);
+router.get('/usuario/:correo', getUserByEmailContratacionAm);
+router.post('/enviar-correo-contratacion', enviarCorreoContratacion);
+router.get('/ambulancia/:AmbulanciaID', getAmbulanciaById);
+router.get('/tipoContratacion/:ID_Tipo_Contratacion', getTipoContratacionById);
+router.get('/servicios-excluidos', getServiciosExcluidos);
+router.get('/horas-disponibles/:fecha', getHorasDisponiblesPorFecha);
+
 
 module.exports =  router;

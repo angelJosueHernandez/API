@@ -116,5 +116,28 @@ module.exports = { querys : {
 
     getLoginUser:
     "SELECT correo, contrasena, estado_Cuenta , nombre, ID_Usuario FROM tbl_Usuarios  WHERE correo = @correo",
+
+    //-----------------------Contratacion de Ambulancias ------------------------
+    createContratacionSinRegistrar: "INSERT INTO tbl_Contratacion_Ambulancia (nombre, apellido_Paterno, apellido_Materno, inicio_Traslado, escala, destino_Traslado, motivo, material_especifico, fecha, horario, ID_Tipo_Contratacion) VALUES(@nombre, @apellido_Paterno, @apellido_Materno, @inicio_Traslado, @escala, @destino_Traslado, @motivo, @material_especifico, @fecha, @horario, @ID_Tipo_Contratacion )",
+    
+
+
+    createContratacion: `
+    INSERT INTO tbl_Contratacion_Ambulancia (nombre, apellido_Paterno, apellido_Materno, inicio_Traslado, escala, destino_Traslado, motivo, material_especifico, fecha, horario, ID_Usuario, ID_Tipo_Contratacion, estado, AmbulanciaID)
+    VALUES (@nombre, @apellido_Paterno, @apellido_Materno, @inicio_Traslado, @escala, @destino_Traslado, @motivo, @material_especifico, @fecha, @horario, @ID_Usuario, @ID_Tipo_Contratacion, 'revision', @AmbulanciaID)
+`,
+    getAvailableAmbulances: `
+        SELECT AmbulanciaID, NumeroAmbulancia, TipoAmbulancia, EstadoActual 
+        FROM Ambulancias
+        WHERE EstadoActual = 'Disponible'
+    `,
+
+    getTipoContratacion:"SELECT * FROM tbl_Tipo_Contratacion",
+
+    getUserByEmail: `
+    SELECT nombre, apellidoP, apellidoM
+    FROM tbl_Usuarios
+    WHERE correo = @correo`,
+    
   }
 };

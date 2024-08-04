@@ -85,9 +85,11 @@ exports.updateCitasById = async (req, res) => {
     const result = await pool.request()
       .input("fecha", sql.Date, inputDate.format('YYYY-MM-DD'))
       .input("horario", sql.VarChar, horario)
-      .query("SELECT * FROM tbl_Citas WHERE fecha = @fecha AND CAST(horario AS TIME) = CAST(@horario AS TIME)");
+      .query("SELECT estado FROM tbl_Citas WHERE fecha = @fecha AND CAST(horario AS TIME) = CAST(@horario AS TIME)");
 
-    if (result.recordset.length > 0) {
+    // Permitir el registro de la cita solo si no existen citas con estado distinto de 'Cancelado'
+    const citasConflictivas = result.recordset.filter(cita => cita.estado !== 'Cancelado');
+    if (citasConflictivas.length > 0) {
       return res.status(400).json({ msg: "Ya existe una cita en esta fecha y hora" });
     }
 
@@ -105,7 +107,22 @@ exports.updateCitasById = async (req, res) => {
         VALUES (@nombre, @apellido_Paterno, @apellido_Materno, @fecha, CAST(@horario AS TIME), 'Pendiente', 'UNC', @ID_Servicio, @correo)
       `);
 
+
+      const servicioResult = await pool.request()
+      .input("ID_Servicio", sql.VarChar, ID_Servicio)
+      .query("SELECT tipo_Servicio, indicaciones_previas FROM tbl_Servicios WHERE ID_Servicio = @ID_Servicio");
+
+    if (servicioResult.recordset.length === 0) {
+      return res.status(400).json({ msg: "El servicio no existe" });
+    }
+
+    const { tipo_Servicio, indicaciones_previas } = servicioResult.recordset[0];
+
+
+
     res.json({ nombre, apellido_Paterno, apellido_Materno, fecha, horario, ID_Servicio, correo });
+
+    await enviarCorreoCita({ nombre, apellido_Paterno, apellido_Materno, fecha, horario, tipo_Servicio, indicaciones_previas, correo });
   } catch (error) {
     console.error("Error en createNewCitas:", error);
     res.status(500).json({ error: error.message, stack: error.stack });
@@ -113,6 +130,79 @@ exports.updateCitasById = async (req, res) => {
 };
 
 
+
+const enviarCorreoCita = async ({ nombre, apellido_Paterno, apellido_Materno, fecha, horario, tipo_Servicio, indicaciones_previas, correo }) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'cruzrojasuport@gmail.com',
+        pass: 'onopzodxqxheqwnz'
+      }
+    });
+
+    const mailOptions = {
+      from: 'cruzrojasuport@gmail.com',
+      to: correo,
+      subject: 'Confirmación de Registro de Cita',
+      html: `
+        <html>
+        <head>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              background-color: #f2f2f2;
+              margin: 0;
+              padding: 0;
+            }
+            .banner {
+              background-color: #ff0000;
+              color: #fff;
+              padding: 10px;
+              text-align: center;
+            }
+            .container {
+              max-width: 600px;
+              margin: 20px auto;
+              padding: 20px;
+              background-color: #fff;
+              border-radius: 10px;
+              box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            }
+            .footer {
+              text-align: center;
+              margin-top: 20px;
+              color: #666;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="banner">
+            <h2>Registro de Cita - Cruz Roja</h2>
+          </div>
+          <div class="container">
+            <p>Estimado/a ${nombre} ${apellido_Paterno} ${apellido_Materno},</p>
+            <p>Su cita ha sido registrada exitosamente.</p>
+            <p><strong>Fecha:</strong> ${fecha}</p>
+            <p><strong>Horario:</strong> ${horario}</p>
+            <p><strong>Servicio:</strong> ${tipo_Servicio}</p>
+            <p><strong>Indicaciones Previas:</strong> ${indicaciones_previas}</p>
+            <p>Gracias por confiar en nosotros.</p>
+          </div>
+          <div class="footer">
+            <p>Atentamente,</p>
+            <p>El equipo de Cruz Roja</p>
+          </div>
+        </body>
+        </html>`
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log('Correo enviado correctamente');
+  } catch (error) {
+    console.error('Error al enviar el correo:', error);
+  }
+};
 
 
 
@@ -425,5 +515,68 @@ exports.getCitasPorCorreo = async (req, res) => {
   } catch (error) {
     console.error("Error al obtener las citas por correo:", error);
     return res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+
+
+
+exports.getHorasDisponiblesPorFecha = async (req, res) => {
+  const { fecha } = req.params;
+
+  // Convert the date to the correct timezone and format
+  const dateInMexico = moment.tz(fecha, 'America/Mexico_City').format('M/D/YYYY');
+  console.log(dateInMexico);
+
+  const horarios = [
+    { id: 1, name: '08:00 AM', time: '08:00:00' },
+    { id: 2, name: '08:30 AM', time: '08:30:00' },
+    { id: 3, name: '09:00 AM', time: '09:00:00' },
+    { id: 4, name: '09:30 AM', time: '09:30:00' },
+    { id: 5, name: '10:00 AM', time: '10:00:00' },
+    { id: 6, name: '10:30 AM', time: '10:30:00' },
+    { id: 7, name: '11:00 AM', time: '11:00:00' },
+    { id: 8, name: '11:30 AM', time: '11:30:00' },
+    { id: 9, name: '12:00 PM', time: '12:00:00' },
+    { id: 10, name: '12:30 PM', time: '12:30:00' },
+    { id: 11, name: '01:00 PM', time: '13:00:00' },
+    { id: 12, name: '01:30 PM', time: '13:30:00' },
+    { id: 13, name: '02:00 PM', time: '14:00:00' },
+    { id: 14, name: '02:30 PM', time: '14:30:00' },
+    { id: 15, name: '03:00 PM', time: '15:00:00' },
+    { id: 16, name: '03:30 PM', time: '15:30:00' },
+    { id: 17, name: '04:00 PM', time: '16:00:00' },
+    { id: 18, name: '04:30 PM', time: '16:30:00' },
+  ];
+
+  try {
+    const pool = await getConnection();
+    if (!pool) {
+      throw new Error("No se pudo establecer la conexión con la base de datos");
+    }
+
+    const result = await pool.request()
+      .input('fecha', sql.VarChar, dateInMexico)
+      .query(`
+        SELECT horario FROM tbl_Citas
+        WHERE fecha = @fecha AND estado = 'Pendiente'
+      `);
+
+    // Extraer solo la parte de la hora en formato 'HH:mm:ss'
+    const horariosOcupados = result.recordset.map(record => {
+      const time = new Date(record.horario).toISOString().substr(11, 8);
+      return time;
+    });
+    console.log(horariosOcupados);
+
+    const horariosDisponibles = horarios.filter(horario => !horariosOcupados.includes(horario.time));
+    console.log(horariosDisponibles);
+
+    res.json(horariosDisponibles);
+  } catch (error) {
+    console.error("Error al obtener las horas disponibles por fecha:", error);
+    res.status(500).json({ error: error.message, stack: error.stack });
   }
 };
