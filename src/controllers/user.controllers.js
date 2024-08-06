@@ -845,7 +845,7 @@ exports.enviarTokenVerificacion = async (req, res) => {
 };
 
 
-exports.compararTokenVerificacion = async (req, res) => {
+exports.compararTokenVerificacion2 = async (req, res) => {
   const { correo, tokenUsuario } = req.body;
   const clientIp = req.clientIp;
   console.log("IP del cliente:", clientIp);
@@ -928,6 +928,78 @@ exports.compararTokenVerificacion = async (req, res) => {
   }
 };
 
+
+
+exports.compararTokenVerificacion = async (req, res) => {
+  const { correo, tokenUsuario } = req.body;
+  const clientIp = req.clientIp;
+  console.log("IP del cliente:", clientIp);
+  let userId;
+
+  try {
+    // Obtener conexión a la base de datos
+    const pool = await getConnection();
+    const result = await pool.request()
+      .input("correo", sql.VarChar, correo)
+      .query(querys.getUserLogin);
+
+    const user = result.recordset[0];
+    userId = user.ID_Usuario; // Asignar userId aquí
+    console.log(userId);
+
+    // Verificar si el token proporcionado por el usuario está presente
+    if (tokenUsuario === undefined) {
+      return res.status(400).json({ mensaje: "El token proporcionado es inválido" });
+    }
+
+    // Obtener el token almacenado en la base de datos
+    const result2 = await pool.request()
+      .input("correo", sql.VarChar, correo)
+      .query(querys.obtenerTokenVerificacion);
+
+    const tokenAlmacenado = result2.recordset.length > 0 ? result2.recordset[0].token : null;
+
+    console.log("Token almacenado:", tokenAlmacenado);
+    console.log("Token proporcionado:", tokenUsuario);
+
+    // Verificar si el token almacenado está expirado
+    if (tokenAlmacenado === 'expirado') {
+      await insertLog('Inicio de Sesion Fallido', clientIp, correo, 'Inicio de sesión fallido, el token ha expirado', 'Doble Factor', '401', userId);
+      return res.json({ mensaje: "El token de verificación ha expirado" });
+    }
+
+    // Comparar el token proporcionado por el usuario con el almacenado en la base de datos
+    if (tokenUsuario === tokenAlmacenado) {
+      const payload = {
+        id: user.ID_Usuario,
+        nombre: user.nombre,
+        correo: user.correo,
+        IsAuthenticated: true,
+        rol: user.Id_Cargo
+      };
+
+      const clave = 'APICRUZROJA';
+      const Token = jwt.sign(payload, clave);
+
+      // Configurar la cookie
+      console.log("cookie enviada: " + Token);
+
+      res.cookie('jwt', Token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None'
+      });
+
+      await insertLog('Inicio de Sesion', clientIp, correo, 'El usuario ha pasado el segundo método de autenticación y se ha iniciado correctamente la sesión', 'Doble Factor', '200', userId);
+      res.json({ mensaje: "El token de verificación es válido" });
+    } else {
+      res.json({ mensaje: "El token de verificación es inválido" });
+    }
+  } catch (error) {
+    console.error('Error al comparar el token de verificación:', error);
+    res.status(500).json({ mensaje: 'Error al comparar el token de verificación' });
+  }
+};
 
 
 
