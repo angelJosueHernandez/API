@@ -76,19 +76,13 @@ app.use(cookieParser());
 
 // Configurar CORS
 app.use(cors({
-  origin: function (origin, callback) {
-    // Permitir solicitudes desde cualquier origen
-    callback(null, true);
-  },
+  origin: 'https://publica-pagina-cruz-roja.vercel.app', // Especifica el dominio exacto de tu frontend
   credentials: true // Permitir el envío de cookies
 }));
 
 // Agregar encabezados CORS a todas las respuestas
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (origin) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
+  res.setHeader('Access-Control-Allow-Origin', 'https://publica-pagina-cruz-roja.vercel.app');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -103,6 +97,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(requestIp.mw());
 
 // Rutas
-app.use(userRoutes);
+app.use('/api', userRoutes);
 
 module.exports = app;

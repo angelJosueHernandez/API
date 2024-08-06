@@ -915,14 +915,7 @@ exports.compararTokenVerificacion2 = async (req, res) => {
       console.log("cookie enviada"+ Token)
     // res.cookie('jwt', Token, { httpOnly: true, secure: true });
   
-      //res.cookie("jwt", Token);
-
-      res.cookie('jwt', Token, {
-        httpOnly: true,
-        secure: true, // Esto requiere HTTPS
-        sameSite: 'None'
-      });
-      
+      res.cookie("jwt", Token);
  
       await insertLog( 'Inisio de Sesion',clientIp, correo,'El usuario ha pasado el segundo metodo de autentificacion y se ha iniciado correctamente la sesion','Doble Factor', '200',userId);
       res.json({ mensaje: "El token de verificación es válido" });
@@ -996,6 +989,7 @@ exports.compararTokenVerificacion = async (req, res) => {
         secure: true,
         sameSite: 'None'
       });
+
 
       await insertLog('Inicio de Sesion', clientIp, correo, 'El usuario ha pasado el segundo método de autenticación y se ha iniciado correctamente la sesión', 'Doble Factor', '200', userId);
       res.json({ mensaje: "El token de verificación es válido" });
