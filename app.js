@@ -1,5 +1,5 @@
 
-/**
+
 const express = require('express');
 const cors = require('cors');
 const userRoutes = require('./src/routes/user.routes');
@@ -54,49 +54,3 @@ module.exports = app;
 ///jsbdvbhjsdbvhabshbhjasda
 
 
- */
-
-
-
-const express = require('express');
-const cors = require('cors');
-const userRoutes = require('./src/routes/user.routes');
-const morgan = require('morgan');
-const config = require('./config');
-const cookieParser = require('cookie-parser');
-const requestIp = require('request-ip');
-
-const app = express();
-
-// Configuración del puerto
-app.set('port', config.port);
-
-// Middlewares
-app.use(cookieParser());
-
-// Configurar CORS
-app.use(cors({
-  origin: 'https://publica-pagina-cruz-roja.vercel.app', // Especifica el dominio exacto de tu frontend
-  credentials: true // Permitir el envío de cookies
-}));
-
-// Agregar encabezados CORS a todas las respuestas
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://publica-pagina-cruz-roja.vercel.app');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  next();
-});
-
-app.use(morgan('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
-// Middleware para obtener la IP del cliente
-app.use(requestIp.mw());
-
-// Rutas
-app.use('/api', userRoutes);
-
-module.exports = app;

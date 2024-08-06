@@ -948,7 +948,7 @@ exports.compararTokenVerificacion = async (req, res) => {
     console.log(userId);
 
     // Verificar si el token proporcionado por el usuario está presente
-    if (tokenUsuario === undefined) {
+    if (!tokenUsuario) {
       return res.status(400).json({ mensaje: "El token proporcionado es inválido" });
     }
 
@@ -979,20 +979,12 @@ exports.compararTokenVerificacion = async (req, res) => {
       };
 
       const clave = 'APICRUZROJA';
-      const Token = jwt.sign(payload, clave);
+      const token = jwt.sign(payload, clave);
 
-      // Configurar la cookie
-      console.log("cookie enviada: " + Token);
-
-      res.cookie('jwt', Token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'None'
-      });
-
+      console.log("Token enviado:", token);
 
       await insertLog('Inicio de Sesion', clientIp, correo, 'El usuario ha pasado el segundo método de autenticación y se ha iniciado correctamente la sesión', 'Doble Factor', '200', userId);
-      res.json({ mensaje: "El token de verificación es válido" });
+      res.json({ mensaje: "El token de verificación es válido", token });
     } else {
       res.json({ mensaje: "El token de verificación es inválido" });
     }
@@ -1001,6 +993,7 @@ exports.compararTokenVerificacion = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al comparar el token de verificación' });
   }
 };
+
 
 
 
