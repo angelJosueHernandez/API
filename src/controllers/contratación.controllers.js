@@ -431,3 +431,187 @@ exports.getServiciosExcluidos = async (req, res) => {
         res.status(500).json({ error: error.message, stack: error.stack });
     }
 };
+
+
+
+
+//--------------------------------------------Perfil------------------------------------
+
+exports.getContratacionById = async (req, res) => {
+    const { userId } = req.params;
+  
+    if (!userId) {
+      return res.status(400).json({ msg: 'ID de usuario es requerido' });
+    }
+  
+    try {
+      const pool = await getConnection();
+      if (!pool) {
+        throw new Error("No se pudo establecer la conexión con la base de datos");
+      }
+  
+      const result = await pool.request()
+        .input("ID_Usuario", sql.Int, parseInt(userId))
+        .query(`
+          SELECT *
+          FROM tbl_Contratacion_Ambulancia
+          WHERE ID_Usuario = @ID_Usuario
+            AND (estado = 'Revision' OR estado = 'revision')
+        `);
+  
+      if (result.recordset.length === 0) {
+        return res.json([]); // Devuelve un array vacío en lugar de un objeto con un mensaje
+      } else {
+        const formattedResults = result.recordset.map(contratacion => {
+          console.log("Fecha original:", contratacion.fecha);
+          console.log("Horario original:", contratacion.horario);
+  
+          // Procesar la fecha
+          const fechaOriginal = new Date(contratacion.fecha);
+          const fechaMexico = new Date(fechaOriginal.getTime() + fechaOriginal.getTimezoneOffset() * 60000);
+          const fechaFormateada = fechaMexico.toISOString().split('T')[0];
+  
+          // Procesar la hora
+          const horaOriginal = new Date(contratacion.horario);
+          const horaFormateada = `${String(horaOriginal.getUTCHours()).padStart(2, '0')}:${String(horaOriginal.getUTCMinutes()).padStart(2, '0')}`;
+  
+          console.log("Fecha extraída:", fechaFormateada);
+          console.log("Hora extraída:", horaFormateada);
+  
+          // Combinar fecha y hora
+          const fechaHoraCombinada = `${fechaFormateada}T${horaFormateada}`;
+  
+          // Crear un objeto moment en la zona horaria de México
+          const contratacionMoment = moment.tz(fechaHoraCombinada, 'America/Mexico_City');
+  
+          console.log("Fecha y hora en México:", contratacionMoment.format('YYYY-MM-DD hh:mm A'));
+  
+          return {
+            ...contratacion,
+            fecha: contratacionMoment.format('DD/MM/YYYY'),
+            horario: contratacionMoment.format('hh:mm A')
+          };
+        });
+        return res.json(formattedResults);
+      }
+    } catch (error) {
+      console.error('Error al obtener las contrataciones del usuario:', error);
+      res.status(500).json({ error: 'Error al obtener las contrataciones del usuario' });
+    }
+  };
+  
+  
+  exports.updateFechaContratacionAmbulanciaById = async (req, res) => {
+      const { fecha, horario} = req.body;
+      const { ID_Contratacion } = req.params;
+    
+      if (!fecha || !horario ) {
+        return res.status(400).json({ msg: "Por favor llene todos los campos" });
+      }
+    
+      try {
+        const pool = await getConnection();
+        if (!pool) {
+          throw new Error("No se pudo establecer la conexión con la base de datos");
+        }
+    
+        // Obtener la fecha actual en la zona horaria de México
+        const today = moment().tz('America/Mexico_City').startOf('day');
+        const now = moment().tz('America/Mexico_City');
+    
+        // Convertir la fecha de entrada a la fecha en la zona horaria de México
+        const inputDate = moment.tz(fecha, 'YYYY-MM-DD', 'America/Mexico_City').startOf('day');
+    
+        console.log('Fecha actual (local):', today.format());
+        console.log('Fecha de entrada (local):', inputDate.format());
+    
+        if (inputDate.isBefore(today)) {
+          console.log("La fecha de la contratación no puede ser anterior a hoy");
+          return res.status(400).json({ msg: "La fecha de la contratación no puede ser anterior a hoy" });
+        }
+    
+        // Asegurar que el horario esté en formato correcto HH:mm:ss
+        const horarioRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+        if (!horarioRegex.test(horario)) {
+          console.log("El formato de la hora es inválido. Use HH:mm:ss");
+          return res.status(400).json({ msg: "El formato de la hora es inválido. Use HH:mm:ss" });
+        }
+    
+        // Convertir el horario a un objeto moment en la zona horaria de México
+        const inputDateTime = moment.tz(`${fecha} ${horario}`, 'YYYY-MM-DD HH:mm:ss', 'America/Mexico_City');
+    
+        // Verificar si la contratación es para hoy y la hora ya ha pasado
+        if (inputDate.isSame(today) && inputDateTime.isBefore(now)) {
+          console.log("No puede agendar una contratación en una hora que ya ha pasado hoy");
+          return res.status(400).json({ msg: "No puede agendar una contratación en una hora que ya ha pasado hoy" });
+        }
+    
+        // Verificar que no exista una contratación en la misma fecha y hora
+        console.log("Verificando contrataciones duplicadas...");
+        const result = await pool.request()
+          .input("fecha", sql.Date, inputDate.format('YYYY-MM-DD'))
+          .input("horario", sql.VarChar, horario)
+          .input("ID_Contratacion", sql.Int, ID_Contratacion) // Asegúrate de pasar @ID_Contratacion aquí también
+          .query("SELECT * FROM tbl_Contratacion_Ambulancia WHERE fecha = @fecha AND CAST(horario AS TIME) = CAST(@horario AS TIME) AND ID_Contratacion != @ID_Contratacion");
+    
+        console.log("Resultados de verificación de contrataciones duplicadas:", result.recordset);
+    
+        if (result.recordset.length > 0) {
+          console.log("Ya existe una contratación en esta fecha y hora");
+          return res.status(400).json({ msg: "Ya existe una contratación en esta fecha y hora" });
+        }
+    
+        // Actualizar la contratación en la base de datos
+        console.log("Actualizando la contratación...");
+        await pool.request()
+          .input("fecha", sql.Date, inputDate.format('YYYY-MM-DD'))
+          .input("horario", sql.VarChar, horario)
+          .input("ID_Contratacion", sql.Int, ID_Contratacion) // Asegúrate de pasar @ID_Contratacion aquí también
+          .query('UPDATE tbl_Contratacion_Ambulancia SET fecha = @fecha, horario = CAST(@horario AS TIME) WHERE ID_Contratacion = @ID_Contratacion');
+    
+        console.log("Contratación actualizada exitosamente");
+        res.json({ msg: "Contratación actualizada exitosamente" });
+      } catch (error) {
+        console.error("Error en la actualización de la contratación:", error.message); // Añadir logs
+        res.status(500).json({ msg: "Error al actualizar la contratación", error: error.message });
+      }
+  };
+  
+  exports.updateCancelarContratacionById = async (req, res) => {
+    const { estado } = req.body;
+    const { ID_Contratacion } = req.params;
+  
+    if (!estado) {
+      return res.status(400).json({ msg: "Por favor llene todos los campos" });
+    }
+  
+    try {
+      const pool = await getConnection();
+      if (!pool) {
+        throw new Error("No se pudo establecer la conexión con la base de datos");
+      }
+  
+      await pool.request()
+        .input("estado", sql.VarChar, estado)
+        .input("ID_Contratacion", sql.Int, ID_Contratacion)
+        .query(`
+          UPDATE tbl_Contratacion_Ambulancia
+          SET estado = @estado
+          WHERE ID_Contratacion = @ID_Contratacion
+        `);
+  
+      // Actualizar el estado de la ambulancia a 'Disponible'
+      await pool.request()
+        .input("ID_Contratacion", sql.Int, ID_Contratacion)
+        .query(`
+          UPDATE Ambulancias
+          SET EstadoActual = 'Disponible'
+          WHERE AmbulanciaID = (SELECT AmbulanciaID FROM tbl_Contratacion_Ambulancia WHERE ID_Contratacion = @ID_Contratacion)
+        `);
+  
+      res.json({ msg: "Contratación cancelada exitosamente", estado });
+    } catch (error) {
+      console.error("Error al cancelar la contratación:", error.message);
+      res.status(500).json({ msg: "Error al cancelar la contratación", error: error.message });
+    }
+  };

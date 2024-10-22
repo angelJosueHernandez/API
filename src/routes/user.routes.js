@@ -22,6 +22,9 @@ const {
   activateCuentaId,
   enviarSMSRecuperacion,
   loginUser,
+  getMiPerfilById,
+  updateUsuarioContactInfoById,
+  getTotalUsuarios 
 } = require("../controllers/user.controllers");
 
 
@@ -62,7 +65,13 @@ const {
   getCitasPorFechaYRango,
   getCitaPorId,
   getCitasPorCorreo,
-  getHorasDisponiblesPorFecha
+  getHorasDisponiblesPorFecha,
+  createNewCitasUsuario,
+  updateFechaCitaById,
+  updateCancelarCitaById,
+  getCitasPorCorreoPagina,
+  getTipoServicios
+
 } = require("../controllers/citas.controllers");
 
 const {
@@ -74,8 +83,20 @@ const {
   enviarCorreoContratacion,
   getAmbulanciaById,
   getTipoContratacionById,
-  getServiciosExcluidos
+  getServiciosExcluidos,
+  updateCancelarContratacionById,
+  updateFechaContratacionAmbulanciaById,
+  getContratacionById
 } = require("../controllers/contratación.controllers");
+
+
+
+
+const {
+  registrarSuministro,
+  getSuminitros
+} = require("../controllers/suministros.controllers");
+
 
 
 const router = Router();
@@ -109,7 +130,7 @@ router.post("/enviarverificacionCorreo/:correo", enviarTokenVerificacion);
 // Comparar el token de verificacion
 router.post("/verificacionTokenIdentificacion/:correo", compararTokenVerificacion);
 router.post("/loginUser", loginUser)
-
+router.get('/totalUsuarios', getTotalUsuarios);
 
 
 //////-------------------RUTAS ADMIN---------------------------------------------------------
@@ -173,6 +194,23 @@ router.get('/ambulancia/:AmbulanciaID', getAmbulanciaById);
 router.get('/tipoContratacion/:ID_Tipo_Contratacion', getTipoContratacionById);
 router.get('/servicios-excluidos', getServiciosExcluidos);
 router.get('/horas-disponibles/:fecha', getHorasDisponiblesPorFecha);
+router.get("/Contratacion/:userId",getContratacionById);
+
+
+router.get("/MiPerfil/:userId",getMiPerfilById);
+router.post('/cancelarContratacion/:ID_Contratacion', updateCancelarContratacionById);
+router.get('/citasPagina/correo', getCitasPorCorreoPagina);
+router.post('/actualizarFechaCitas/:ID_Cita', updateFechaCitaById);
+router.post('/actualizarFechaContratacion/:ID_Contratacion', updateFechaContratacionAmbulanciaById);
+router.post('/cancelarCitas/:ID_Cita', updateCancelarCitaById);
+router.get("/tiposServicios", getTipoServicios);
+
+
+router.post("/actualizarContacto/:ID_Usuario", updateUsuarioContactInfoById)
+
+
+router.get("/Suministro",getSuminitros);
+router.post("/registrarSuministro", registrarSuministro);
 
 
 module.exports =  router;

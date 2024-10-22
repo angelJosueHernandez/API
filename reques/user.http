@@ -1,6 +1,12 @@
-GET http://localhost:3000/user
+GET   https://api-beta-mocha-59.vercel.app/user
 ### autenticate 
-POST http://localhost:3000/user/authenticate
+
+GET   http://localhost:3000/totalUsuarios
+
+#####
+GET http://localhost:3000/tiposServicios/
+#####
+POST https://api-beta-mocha-59.vercel.app/user/authenticate
 Content-Type: application/json
 
 {
@@ -165,7 +171,7 @@ Content-Type: application/json
 
 {
     "correo": "20210672@uthh.edu.mx",
-    "tokenUsuario": "458375"
+    "tokenUsuario": "148409"
 }
 
 ### enviar correo

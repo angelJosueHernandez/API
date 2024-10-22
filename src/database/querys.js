@@ -109,7 +109,10 @@ module.exports = { querys : {
     getCitas:"SELECT * FROM tbl_Citas",
     updateCitasById:"UPDATE tbl_Citas SET estado=@estado WHERE ID_Cita=@ID_Cita",
     createNewCitas:"INSERT INTO tbl_Citas (nombre, apellido_Paterno, apellido_Materno, fecha, horario, estado, Id_Cargo, ID_Servicio, correo) VALUES (@nombre, @apellido_Paterno, @apellido_Materno, @fecha, CAST(@horario AS TIME), 'Pendiente', 'UNC', @ID_Servicio, @correo)",
-
+    updateFechaCitaById:"UPDATE tbl_Citas SET fecha=@fecha, horario=@horario WHERE ID_Cita=@ID_Cita",
+    updateCancelarCitaById:"UPDATE tbl_Citas SET estado=@estado WHERE ID_Cita=@ID_Cita",
+    getTipoServicios:"SELECT * FROM tbl_Servicios",
+    
     ////--------------Expedientes-------------------
     CreateNewExpedienteById:"INSERT INTO tbl_Expediente (fecha,motivo,diagnostico_ingreso,diagnostico_egreso,medicamentos,ID_Historial) VALUES(GETDATE(),@motivo,@diagnostico_ingreso,@diagnostico_egreso,@medicamentos,@ID_Historial)",
     
@@ -139,5 +142,20 @@ module.exports = { querys : {
     FROM tbl_Usuarios
     WHERE correo = @correo`,
     
-  }
+
+
+  //----------------------------- Perfil ----------------------------
+  getMiPerfilById: "SELECT nombre, apellidoP, apellidoM, correo, telefono FROM tbl_Usuarios Where ID_Usuario= @ID_Usuario",
+  getContratacionById: "SELECT ID_Contratacion, destino_Traslado, motivo, fecha, horario, estado FROM tbl_Contratacion_Ambulancia Where ID_Usuario= @ID_Usuario",
+  updateCancelarContratacionById:"UPDATE tbl_Contratacion_Ambulancia SET estado=@estado WHERE ID_Contratacion=@ID_Contratacion",
+  
+ 
+
+  //------------------------------------------------- Suministros---------------------------
+
+  registrarSuministro: "INSERT INTO tbl_Insumos_Medicos (clave, nombre_insumo, cantidad, lote, fecha_caducidad, ID_Asociado) VALUES(@clave, @nombre_insumo, @cantidad, @lote, @fecha_caducidad, '12345678')",
+  getSuminitros: "SELECT * FROM tbl_Insumos_Medicos"
+
+ },
+
 };
