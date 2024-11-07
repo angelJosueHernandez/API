@@ -678,7 +678,7 @@ exports.createNewCitasUsuario = async (req, res) => {
   }
 };
 
-exports.updateFechaCitaById = async (req, res) => {
+exports.updateFechaCitaById2AnteriorCarlos = async (req, res) => {
   const { fecha, horario, ID_Servicio } = req.body;
   const { ID_Cita } = req.params;
 
@@ -754,6 +754,94 @@ exports.updateFechaCitaById = async (req, res) => {
     res.status(500).json({ msg: "Error al actualizar la cita", error: error.message });
   }
 };
+
+exports.updateFechaCitaById = async (req, res) => {
+  const { fecha, horario, ID_Servicio } = req.body;
+  const { ID_Cita } = req.params;
+
+  if (!fecha || !horario || !ID_Servicio) {
+    return res.status(400).json({ msg: "Por favor llene todos los campos" });
+  }
+
+  try {
+    const pool = await getConnection();
+    if (!pool) {
+      throw new Error("No se pudo establecer la conexión con la base de datos");
+    }
+
+    const today = moment().tz('America/Mexico_City').startOf('day');
+    const now = moment().tz('America/Mexico_City');
+    const inputDate = moment.tz(fecha, 'YYYY-MM-DD', 'America/Mexico_City').startOf('day');
+
+    if (inputDate.isBefore(today)) {
+      return res.status(400).json({ msg: "La fecha de la cita no puede ser anterior a hoy" });
+    }
+
+    const horarioRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+    if (!horarioRegex.test(horario)) {
+      return res.status(400).json({ msg: "El formato de la hora es inválido. Use HH:mm:ss" });
+    }
+
+    const inputDateTime = moment.tz(`${fecha} ${horario}`, 'YYYY-MM-DD HH:mm:ss', 'America/Mexico_City');
+    if (inputDate.isSame(today) && inputDateTime.isBefore(now)) {
+      return res.status(400).json({ msg: "No puede agendar una cita en una hora que ya ha pasado hoy" });
+    }
+
+    // Verificar que no exista una cita en la misma fecha y hora con estado diferente de "Cancelado"
+    const result = await pool.request()
+      .input("fecha", sql.Date, inputDate.format('YYYY-MM-DD'))
+      .input("horario", sql.VarChar, horario)
+      .input("ID_Cita", sql.Int, ID_Cita)
+      .query(`SELECT * FROM tbl_Citas 
+              WHERE fecha = @fecha 
+              AND CAST(horario AS TIME) = CAST(@horario AS TIME) 
+              AND ID_Cita != @ID_Cita 
+              AND estado != 'Cancelado'`);
+
+    if (result.recordset.length > 0) {
+      return res.status(400).json({ msg: "Ya existe una cita en esta fecha y hora" });
+    }
+
+    // Verificar si la actualización es para otra hora u otro servicio en la misma fecha y con el mismo correo
+    const citaActual = await pool.request()
+      .input("ID_Cita", sql.Int, ID_Cita)
+      .query("SELECT correo FROM tbl_Citas WHERE ID_Cita = @ID_Cita");
+
+    if (citaActual.recordset.length === 0) {
+      return res.status(404).json({ msg: "Cita no encontrada" });
+    }
+
+    const { correo } = citaActual.recordset[0];
+
+    const resultSameDate = await pool.request()
+      .input("fecha", sql.Date, inputDate.format('YYYY-MM-DD'))
+      .input("ID_Cita", sql.Int, ID_Cita)
+      .input("correo", sql.VarChar, correo)
+      .query(`SELECT * FROM tbl_Citas 
+              WHERE fecha = @fecha 
+              AND ID_Cita != @ID_Cita 
+              AND correo = @correo`);
+
+    if (resultSameDate.recordset.length > 0) {
+      return res.status(400).json({ msg: "No puede actualizar la cita a esta hora y servicio porque el correo ya tiene una cita para esta fecha" });
+    }
+
+    // Actualizar la cita en la base de datos
+    await pool.request()
+      .input("fecha", sql.Date, inputDate.format('YYYY-MM-DD'))
+      .input("horario", sql.VarChar, horario)
+      .input("ID_Servicio", sql.Int, ID_Servicio)
+      .input("ID_Cita", sql.Int, ID_Cita)
+      .query('UPDATE tbl_Citas SET fecha = @fecha, horario = CAST(@horario AS TIME), ID_Servicio = @ID_Servicio WHERE ID_Cita = @ID_Cita');
+
+    res.json({ msg: "Cita actualizada exitosamente" });
+  } catch (error) {
+    console.error("Error en la actualización de la cita:", error.message);
+    res.status(500).json({ msg: "Error al actualizar la cita", error: error.message });
+  }
+};
+
+
 
 exports.updateCancelarCitaById = async (req, res) => {
   const { estado } = req.body;
