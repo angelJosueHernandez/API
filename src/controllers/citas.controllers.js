@@ -787,22 +787,7 @@ exports.updateFechaCitaById = async (req, res) => {
       return res.status(400).json({ msg: "No puede agendar una cita en una hora que ya ha pasado hoy" });
     }
 
-    // Verificar que no exista una cita en la misma fecha y hora con estado diferente de "Cancelado"
-    const result = await pool.request()
-      .input("fecha", sql.Date, inputDate.format('YYYY-MM-DD'))
-      .input("horario", sql.VarChar, horario)
-      .input("ID_Cita", sql.Int, ID_Cita)
-      .query(`SELECT * FROM tbl_Citas 
-              WHERE fecha = @fecha 
-              AND CAST(horario AS TIME) = CAST(@horario AS TIME) 
-              AND ID_Cita != @ID_Cita 
-              AND estado != 'Cancelado'`);
-
-    if (result.recordset.length > 0) {
-      return res.status(400).json({ msg: "Ya existe una cita en esta fecha y hora" });
-    }
-
-    // Verificar si la actualización es para otra hora u otro servicio en la misma fecha y con el mismo correo
+    // Obtener el correo de la cita actual para la validación
     const citaActual = await pool.request()
       .input("ID_Cita", sql.Int, ID_Cita)
       .query("SELECT correo FROM tbl_Citas WHERE ID_Cita = @ID_Cita");
@@ -813,6 +798,24 @@ exports.updateFechaCitaById = async (req, res) => {
 
     const { correo } = citaActual.recordset[0];
 
+    // Verificar si ya existe una cita en la misma fecha y hora (con estado distinto de "Cancelado")
+    const result = await pool.request()
+      .input("fecha", sql.Date, inputDate.format('YYYY-MM-DD'))
+      .input("horario", sql.VarChar, horario)
+      .input("ID_Cita", sql.Int, ID_Cita)
+      .query(`SELECT * FROM tbl_Citas 
+              WHERE fecha = @fecha 
+              AND CAST(horario AS TIME) = CAST(@horario AS TIME) 
+              AND ID_Cita != @ID_Cita
+              AND estado != 'Cancelado'`);
+
+    const citaDuplicada = result.recordset[0];
+
+    if (citaDuplicada) {
+      return res.status(400).json({ msg: "Ya existe una cita en esta fecha y hora con estado activo" });
+    }
+
+    // Permitir actualización para la misma fecha pero con diferente hora o servicio, si el correo coincide
     const resultSameDate = await pool.request()
       .input("fecha", sql.Date, inputDate.format('YYYY-MM-DD'))
       .input("ID_Cita", sql.Int, ID_Cita)
@@ -820,10 +823,11 @@ exports.updateFechaCitaById = async (req, res) => {
       .query(`SELECT * FROM tbl_Citas 
               WHERE fecha = @fecha 
               AND ID_Cita != @ID_Cita 
-              AND correo = @correo`);
+              AND correo != @correo 
+              AND estado != 'Cancelado'`);
 
     if (resultSameDate.recordset.length > 0) {
-      return res.status(400).json({ msg: "No puede actualizar la cita a esta hora y servicio porque el correo ya tiene una cita para esta fecha" });
+      return res.status(400).json({ msg: "No puede actualizar la cita, ya hay una cita reservada para esta fecha con un correo diferente" });
     }
 
     // Actualizar la cita en la base de datos
@@ -840,6 +844,7 @@ exports.updateFechaCitaById = async (req, res) => {
     res.status(500).json({ msg: "Error al actualizar la cita", error: error.message });
   }
 };
+
 
 
 
