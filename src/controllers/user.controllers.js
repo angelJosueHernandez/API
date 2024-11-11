@@ -4,13 +4,13 @@ const bcrypt = require('bcryptjs');
 const cron = require('node-cron');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
-
+const Stripe = require('stripe')
 const accountSid = process.env.ACCOUNT_SID;
 const authToken = process.env.AUTH_TOKEN;
 
 const client = require('twilio')(accountSid, authToken);
 
-
+ const stripe = new Stripe("sk_test_51QJQ5uDIWznX38uOBC9ilQpVFcndq3AedIjnyxc91rrd27TxDltf8yrhRXgoD4IZRwmXe46SA0rePnYnr46iqYVV00NUllUeEt")
 
 const verifyToken2 = (token) => {
   try {
@@ -1258,3 +1258,34 @@ exports.getTotalUsuarios = async (req, res) => {
     res.status(500).json({ mensaje: "Error al obtener el total de usuarios", error: error.message });
   }
 };
+
+
+
+
+
+exports.checkoutDonacion = async (req, res) => {
+  const { id, amount } = req.body;
+
+  try {
+    const payment = await stripe.paymentIntents.create({
+      amount,
+      currency: "mxn", // Moneda en pesos mexicanos
+      description: "Donación para Cruz Roja",
+      payment_method: id,
+      confirm: true, // Confirmar el pago al mismo tiempo
+      automatic_payment_methods: {
+        enabled: true,
+        allow_redirects: "never", // No permite redireccionamientos
+      },
+    });
+
+    console.log("Pago exitoso:", payment);
+
+    return res.status(200).json({ message: "Pago realizado con éxito" });
+  } catch (error) {
+    console.error("Error en el pago:", error);
+    return res.status(500).json({ message: error.raw.message });
+  }
+};
+
+

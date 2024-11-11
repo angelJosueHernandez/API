@@ -24,7 +24,9 @@ const {
   loginUser,
   getMiPerfilById,
   updateUsuarioContactInfoById,
-  getTotalUsuarios 
+  getTotalUsuarios,
+  checkoutDonacion,
+  obtenerClientSecret
 } = require("../controllers/user.controllers");
 
 
@@ -212,5 +214,5 @@ router.post("/actualizarContacto/:ID_Usuario", updateUsuarioContactInfoById)
 router.get("/Suministro",getSuminitros);
 router.post("/registrarSuministro", registrarSuministro);
 
-
+router.post("/checkout",checkoutDonacion);
 module.exports =  router;
