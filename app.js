@@ -33,6 +33,13 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+
+   // Agregar el encabezado Document-Policy para habilitar el Browser Profiling
+   res.setHeader('Document-Policy', 'js-profiling');
+
+
+   
   next();
 });
 
