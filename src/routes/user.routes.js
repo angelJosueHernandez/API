@@ -26,7 +26,8 @@ const {
   updateUsuarioContactInfoById,
   getTotalUsuarios,
   checkoutDonacion,
-  registrarFeedback
+  registrarFeedback,
+  registrarDonacion
 } = require("../controllers/user.controllers");
 
 
@@ -217,6 +218,6 @@ router.post("/registrarSuministro", registrarSuministro);
 router.post("/checkout",checkoutDonacion);
 
 router.post("/registrarFeedback",registrarFeedback);
-
+router.post("/registrarDonacion",registrarDonacion);
 
 module.exports =  router;

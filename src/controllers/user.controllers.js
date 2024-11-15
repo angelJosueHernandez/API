@@ -1323,3 +1323,48 @@ exports.registrarFeedback = async (req, res) => {
     res.status(500).json({ mensaje: "Error al registrar el feedback", error: error.message });
   }
 };
+
+
+
+
+// Función para registrar una donación
+exports.registrarDonacion = async (req, res) => {
+  const { correo, monto } = req.body;
+
+  // Verificar que el correo y el monto estén presentes
+  if (!correo || !monto) {
+    return res.status(400).json({ mensaje: "Por favor, proporcione el correo y el monto de la donación" });
+  }
+
+  try {
+    const pool = await getConnection();
+
+    // Obtener los datos del usuario a partir del correo
+    const userResult = await pool.request()
+      .input("correo", sql.VarChar, correo)
+      .query("SELECT ID_Usuario, nombre, apellidoP AS apellido_Paterno, apellidoM AS apellido_Materno, telefono FROM tbl_Usuarios WHERE correo = @correo");
+
+    const user = userResult.recordset[0];
+
+    if (!user) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    }
+
+    // Insertar la donación en la tabla tbl_Donaciones
+    await pool.request()
+      .input("nombre", sql.VarChar, user.nombre)
+      .input("apellido_Paterno", sql.VarChar, user.apellido_Paterno)
+      .input("apellido_Materno", sql.VarChar, user.apellido_Materno)
+      .input("correo", sql.VarChar, correo)
+      .input("telefono", sql.VarChar, user.telefono)
+      .input("monto", sql.Int, monto)
+      .input("ID_Usuario", sql.Int, user.ID_Usuario)
+      .query("INSERT INTO tbl_Donaciones (nombre, apellido_Paterno, apellido_Materno, correo, telefono, monto, ID_Usuario) VALUES (@nombre, @apellido_Paterno, @apellido_Materno, @correo, @telefono, @monto, @ID_Usuario)");
+
+    res.status(201).json({ mensaje: "Donación registrada exitosamente" });
+  } catch (error) {
+    console.error("Error al registrar la donación:", error);
+    res.status(500).json({ mensaje: "Error al registrar la donación", error: error.message });
+  }
+};
+
