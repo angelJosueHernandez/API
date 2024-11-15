@@ -1289,3 +1289,37 @@ exports.checkoutDonacion = async (req, res) => {
 };
 
 
+exports.registrarFeedback = async (req, res) => {
+  const { correo, rating } = req.body;
+
+  // Validación de los campos requeridos
+  if (correo == null || rating == null) {
+    return res.status(400).json({ mensaje: "Por favor proporcione el correo del usuario y la calificación" });
+  }
+
+  try {
+    const pool = await getConnection();
+
+    // Obtener el ID_Usuario a partir del correo
+    const userResult = await pool.request()
+      .input("correo", sql.VarChar, correo)
+      .query("SELECT ID_Usuario FROM tbl_Usuarios WHERE correo = @correo");
+
+    if (userResult.recordset.length === 0) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    }
+
+    const ID_Usuario = userResult.recordset[0].ID_Usuario;
+
+    // Insertar el feedback en la base de datos usando el ID_Usuario obtenido
+    await pool.request()
+      .input("ID_Usuario", sql.Int, ID_Usuario)
+      .input("rating", sql.Int, rating)
+      .query("INSERT INTO tbl_Feedback (ID_Usuario, rating, fecha_Feedback) VALUES (@ID_Usuario, @rating, GETDATE())");
+
+    res.status(201).json({ mensaje: "Feedback registrado exitosamente" });
+  } catch (error) {
+    console.error("Error al registrar el feedback:", error);
+    res.status(500).json({ mensaje: "Error al registrar el feedback", error: error.message });
+  }
+};
