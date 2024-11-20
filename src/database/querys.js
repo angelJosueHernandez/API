@@ -138,7 +138,7 @@ module.exports = { querys : {
     getTipoContratacion:"SELECT * FROM tbl_Tipo_Contratacion",
 
     getUserByEmail: `
-    SELECT nombre, apellidoP, apellidoM
+    SELECT nombre, apellidoP, apellidoM, 
     FROM tbl_Usuarios
     WHERE correo = @correo`,
     
