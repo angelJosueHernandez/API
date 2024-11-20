@@ -195,7 +195,8 @@ GET  http://localhost:3000/antecedentesID/2
 ###
 GET http://localhost:3000/historialMedicoId/2
 
-
+###
+GET http://localhost:3000/MiPerfil/correo/20210654@uthh.edu.mx
 
 ### Actualizar el estado de la cuenta
 PUT http://localhost:3000/userCuenta/pedroreyejj@gmail.com
@@ -249,14 +250,14 @@ POST http://localhost:3000/registroPersonal
 Content-Type: application/json
 
 {
-  "ID_Asociado": "92229300",
-  "nombre": "Angel Josue",
+  "ID_Asociado": "922293",
+  "nombre": "Agustina",
   "apellidoP": "Hernandez",
-  "apellidoM":"Manuel",
-  "correo":"20210672@uthh.edu.mx",
-  "contrasena":"@Ng3l_2021",
-  "estado":"sdrtrt",
-  "delegacion":"strtrd",
+  "apellidoM":"Martinez",
+  "correo":"20200700@uthh.edu.mx",
+  "contrasena":"agustina",
+  "estado":"Hidalgo",
+  "delegacion":"Huejutla",
   "Id_Cargo":"ADM"
 }
 

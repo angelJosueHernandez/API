@@ -27,7 +27,8 @@ const {
   getTotalUsuarios,
   checkoutDonacion,
   registrarFeedback,
-  registrarDonacion
+  registrarDonacion,
+  getMiPerfilporCorreo
 } = require("../controllers/user.controllers");
 
 
@@ -78,6 +79,7 @@ const {
 } = require("../controllers/citas.controllers");
 
 const {
+  getContratacionAmbulancias,
   getTipoContratacion,
   createNewContratacion2,
   createNewContratacionSinRegistrar,
@@ -99,6 +101,11 @@ const {
   registrarSuministro,
   getSuminitros
 } = require("../controllers/suministros.controllers");
+
+const {
+  getDonaciones
+  
+} = require("../controllers/donaciones.controllers");
 
 
 
@@ -186,7 +193,7 @@ router.get('/tiposServicio', getTiposServicio);
 
 
 //Rutas de Contratacion de Ambulancias
-
+router.get("/ContratacionAmbulancias",getContratacionAmbulancias);
 router.post("/CrearContratacionSinRegistrar",createNewContratacionSinRegistrar);
 router.post("/CrearContratacion",createNewContratacion2);
 router.get("/tipoContratacion",getTipoContratacion);
@@ -201,6 +208,7 @@ router.get("/Contratacion/:userId",getContratacionById);
 
 
 router.get("/MiPerfil/:userId",getMiPerfilById);
+router.get("/MiPerfil/correo/:correo",getMiPerfilporCorreo);
 router.post('/cancelarContratacion/:ID_Contratacion', updateCancelarContratacionById);
 router.get('/citasPagina/correo', getCitasPorCorreoPagina);
 router.post('/actualizarFechaCitas/:ID_Cita', updateFechaCitaById);
@@ -219,5 +227,8 @@ router.post("/checkout",checkoutDonacion);
 
 router.post("/registrarFeedback",registrarFeedback);
 router.post("/registrarDonacion",registrarDonacion);
+
+//---------------------------Donaciones---------------------------
+router.get("/donaciones",getDonaciones);
 
 module.exports =  router;

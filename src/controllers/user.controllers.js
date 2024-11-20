@@ -1165,6 +1165,33 @@ exports.getMiPerfilById = async (req, res) => {
   }
 };
 
+
+//----------------movil----------------
+exports.getMiPerfilporCorreo = async (req, res) => {
+  const { correo } = req.params; // Cambiar a correo en lugar de userId
+
+  if (!correo) {
+    return res.status(400).json({ msg: 'Correo es requerido' });
+  }
+
+  try {
+    const pool = await getConnection();
+    // Realizar la consulta para obtener el perfil por correo
+    const result = await pool.request()
+      .input("correo", sql.VarChar, correo) // Cambiar el tipo de entrada a VarChar
+      .query(querys.getMiPerfilporCorreo); // Cambiar a la consulta por correo
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ msg: 'Usuario no encontrado' });
+    }
+
+    res.json(result.recordset[0]); // Retornar el primer resultado
+  } catch (error) {
+    console.error('Error al obtener el perfil del usuario por correo:', error);
+    res.status(500).json({ error: 'Error al obtener el perfil del usuario por correo' });
+  }
+};
+//------------------------------------------------------------------
 exports.updateUsuarioContactInfoById = async (req, res) => {
   const { telefono, correo } = req.body;
   const { ID_Usuario } = req.params;
