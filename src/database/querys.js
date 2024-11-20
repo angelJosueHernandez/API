@@ -121,6 +121,8 @@ module.exports = { querys : {
     "SELECT correo, contrasena, estado_Cuenta , nombre, ID_Usuario FROM tbl_Usuarios  WHERE correo = @correo",
 
     //-----------------------Contratacion de Ambulancias ------------------------
+    getContratacionAmbulancias: "SELECT * FROM tbl_Contratacion_Ambulancia",
+
     createContratacionSinRegistrar: "INSERT INTO tbl_Contratacion_Ambulancia (nombre, apellido_Paterno, apellido_Materno, inicio_Traslado, escala, destino_Traslado, motivo, material_especifico, fecha, horario, ID_Tipo_Contratacion) VALUES(@nombre, @apellido_Paterno, @apellido_Materno, @inicio_Traslado, @escala, @destino_Traslado, @motivo, @material_especifico, @fecha, @horario, @ID_Tipo_Contratacion )",
     
 
@@ -149,12 +151,16 @@ module.exports = { querys : {
   getContratacionById: "SELECT ID_Contratacion, destino_Traslado, motivo, fecha, horario, estado FROM tbl_Contratacion_Ambulancia Where ID_Usuario= @ID_Usuario",
   updateCancelarContratacionById:"UPDATE tbl_Contratacion_Ambulancia SET estado=@estado WHERE ID_Contratacion=@ID_Contratacion",
   
+  getMiPerfilporCorreo: "SELECT ID_Usuario,nombre, apellidoP, apellidoM, correo, telefono FROM tbl_Usuarios Where correo= @correo",
  
 
   //------------------------------------------------- Suministros---------------------------
 
   registrarSuministro: "INSERT INTO tbl_Insumos_Medicos (clave, nombre_insumo, cantidad, lote, fecha_caducidad, ID_Asociado) VALUES(@clave, @nombre_insumo, @cantidad, @lote, @fecha_caducidad, '12345678')",
-  getSuminitros: "SELECT * FROM tbl_Insumos_Medicos"
+  getSuminitros: "SELECT * FROM tbl_Insumos_Medicos",
+
+  //-----------------------------------Donaciones---------------------------------------
+  getDonaciones: "SELECT * FROM tbl_Donaciones",
 
  },
 

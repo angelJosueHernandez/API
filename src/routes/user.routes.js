@@ -28,7 +28,8 @@ const {
   checkoutDonacion,
   registrarFeedback,
   registrarDonacion,
-  handlePaymentSheet
+  handlePaymentSheet,
+  getMiPerfilporCorreo
 } = require("../controllers/user.controllers");
 
 
@@ -79,6 +80,7 @@ const {
 } = require("../controllers/citas.controllers");
 
 const {
+  getContratacionAmbulancias,
   getTipoContratacion,
   createNewContratacion2,
   createNewContratacionSinRegistrar,
@@ -100,6 +102,11 @@ const {
   registrarSuministro,
   getSuminitros
 } = require("../controllers/suministros.controllers");
+
+const {
+  getDonaciones
+  
+} = require("../controllers/donaciones.controllers");
 
 
 
@@ -187,7 +194,7 @@ router.get('/tiposServicio', getTiposServicio);
 
 
 //Rutas de Contratacion de Ambulancias
-
+router.get("/ContratacionAmbulancias",getContratacionAmbulancias);
 router.post("/CrearContratacionSinRegistrar",createNewContratacionSinRegistrar);
 router.post("/CrearContratacion",createNewContratacion2);
 router.get("/tipoContratacion",getTipoContratacion);
@@ -202,6 +209,7 @@ router.get("/Contratacion/:userId",getContratacionById);
 
 
 router.get("/MiPerfil/:userId",getMiPerfilById);
+router.get("/MiPerfil/correo/:correo",getMiPerfilporCorreo);
 router.post('/cancelarContratacion/:ID_Contratacion', updateCancelarContratacionById);
 router.get('/citasPagina/correo', getCitasPorCorreoPagina);
 router.post('/actualizarFechaCitas/:ID_Cita', updateFechaCitaById);
@@ -225,5 +233,8 @@ router.post('/payment-sheet',handlePaymentSheet);
 router.get('/stripe-key', (req, res) => {
   res.json({ publishableKey: "pk_test_51QJQ5uDIWznX38uOqRNbGsjduSvo12H8NQBCqVdIMS3U28yXBQyk6TW8NReNgcZMWfQWayD2i2pXtFIvYJoIUsZf00eIziHzHG" });
 });
+
+//---------------------------Donaciones---------------------------
+router.get("/donaciones",getDonaciones);
 
 module.exports =  router;

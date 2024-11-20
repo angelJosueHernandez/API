@@ -6,6 +6,17 @@ const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
 
+exports.getContratacionAmbulancias = async (req, res)=> {
+  try {
+   const pool = await getConnection()
+   const result= await pool.request().query(querys.getContratacionAmbulancias)
+   res.json(result.recordset)
+  } catch (error) {
+   res.status(500);
+   res.send(error.message);
+  }
+};
+
 exports.createNewContratacionSinRegistrar = async (req, res) => {
     const { nombre, apellido_Paterno, apellido_Materno, inicio_Traslado, escala, destino_Traslado, motivo, material_especifico,
         fecha, horario, ID_Tipo_Contratacion} = req.body;
