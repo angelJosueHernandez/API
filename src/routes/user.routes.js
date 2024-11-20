@@ -232,9 +232,6 @@ router.post("/registrarFeedback",registrarFeedback);
 router.post("/registrarDonacion",registrarDonacion);
 router.post('/payment-sheet',handlePaymentSheet);
 
-router.get('/stripe-key', (req, res) => {
-  res.json({ publishableKey: "pk_test_51QJQ5uDIWznX38uOqRNbGsjduSvo12H8NQBCqVdIMS3U28yXBQyk6TW8NReNgcZMWfQWayD2i2pXtFIvYJoIUsZf00eIziHzHG" });
-});
 
 //---------------------------Donaciones---------------------------
 router.get("/donaciones",getDonaciones);
