@@ -280,7 +280,7 @@ exports.createNewContratacion2 = async (req, res) => {
 
 
 
-exports.getUserByEmailContratacionAm = async (req, res) => {
+exports.getUserByEmailContratacionAm2 = async (req, res) => {
     const { correo } = req.params;
 
     try {
@@ -299,6 +299,28 @@ exports.getUserByEmailContratacionAm = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+
+exports.getUserByEmailContratacionAm = async (req, res) => {
+  const { correo } = req.params;
+
+  try {
+      const pool = await getConnection();
+      const result = await pool.request()
+          .input('correo', sql.VarChar, correo)
+          .query(querys.getUserByEmail);
+
+      if (result.recordset.length > 0) {
+          res.json(result.recordset[0]);
+      } else {
+          res.status(404).json({ msg: 'Usuario no encontrado' });
+      }
+  } catch (error) {
+      console.error('Error al obtener los datos del usuario:', error);
+      res.status(500).json({ error: error.message });
+  }
+};
+
 
 
 
