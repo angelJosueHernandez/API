@@ -93,7 +93,8 @@ const {
   getServiciosExcluidos,
   updateCancelarContratacionById,
   updateFechaContratacionAmbulanciaById,
-  getContratacionById
+  getContratacionById,
+  getUserByEmailContratacionAm2
 } = require("../controllers/contratación.controllers");
 
 
