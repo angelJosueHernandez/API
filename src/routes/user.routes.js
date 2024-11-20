@@ -199,7 +199,9 @@ router.post("/CrearContratacionSinRegistrar",createNewContratacionSinRegistrar);
 router.post("/CrearContratacion",createNewContratacion2);
 router.get("/tipoContratacion",getTipoContratacion);
 router.get('/ambulancias-disponibles', getAvailableAmbulances);
+
 router.get('/usuario/:correo', getUserByEmailContratacionAm);
+
 router.post('/enviar-correo-contratacion', enviarCorreoContratacion);
 router.get('/ambulancia/:AmbulanciaID', getAmbulanciaById);
 router.get('/tipoContratacion/:ID_Tipo_Contratacion', getTipoContratacionById);
