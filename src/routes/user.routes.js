@@ -202,7 +202,7 @@ router.get("/tipoContratacion",getTipoContratacion);
 router.get('/ambulancias-disponibles', getAvailableAmbulances);
 
 router.get('/usuario/:correo', getUserByEmailContratacionAm);
-
+router.get('/usuario2/:correo', getUserByEmailContratacionAm2);
 router.post('/enviar-correo-contratacion', enviarCorreoContratacion);
 router.get('/ambulancia/:AmbulanciaID', getAmbulanciaById);
 router.get('/tipoContratacion/:ID_Tipo_Contratacion', getTipoContratacionById);
