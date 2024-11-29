@@ -79,7 +79,7 @@ module.exports = { querys : {
     createNewPersonal: "INSERT INTO tbl_Personal (ID_Asociado,nombre,apellidoP,apellidoM,correo,contrasena,estado,delegacion,fecha_Registro,fecha_Sesion,estado_Usuario,estado_Cuenta,fecha_bloqueo,token,fecha_token,Id_Cargo) VALUES(@ID_Asociado,@nombre,@apellidoP,@apellidoM,@correo,@contrasena,@estado,@delegacion,GETDATE(), NULL, \'Activo\', \'Activa\',NULL,NULL,NULL,@Id_Cargo)",
     updatePersonalById:"UPDATE tbl_Personal SET Id_Cargo=@Id_Cargo WHERE ID_Asociado=@ID_Asociado",
     updateEstadoPersonalById:"UPDATE tbl_Personal SET estado_Usuario=@estado_Usuario WHERE ID_Asociado=@ID_Asociado;",
-    getPersonalLogin:"SELECT contrasena FROM tbl_Personal  WHERE ID_Asociado = @idIn",
+    getPersonalLogin:"SELECT nombre, contrasena, estado_Usuario, estado_Cuenta FROM tbl_Personal  WHERE ID_Asociado = @idIn",
     actualizarFechaInicioSesionPersonal:
     "UPDATE tbl_Personal  SET fecha_Sesion = GETDATE()  WHERE ID_Asociado = @idIn; ",
 

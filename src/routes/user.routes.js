@@ -74,7 +74,8 @@ const {
   updateFechaCitaById,
   updateCancelarCitaById,
   getCitasPorCorreoPagina,
-  getTipoServicios
+  getTipoServicios,
+  getServiceCategoryAverages
 
 } = require("../controllers/citas.controllers");
 
@@ -91,7 +92,8 @@ const {
   getServiciosExcluidos,
   updateCancelarContratacionById,
   updateFechaContratacionAmbulanciaById,
-  getContratacionById
+  getContratacionById,
+  getContractationCategoryAverages
 } = require("../controllers/contratación.controllers");
 
 
@@ -103,11 +105,16 @@ const {
 } = require("../controllers/suministros.controllers");
 
 const {
-  getDonaciones
+  getDonaciones,
+  getTotalDonations
   
 } = require("../controllers/donaciones.controllers");
 
-
+const {
+  getFeedbackRating,
+  getFeedbackCategoryPercentages
+  
+} = require("../controllers/feedback.controllers");
 
 const router = Router();
 
@@ -186,6 +193,7 @@ router.get("/citasPorFecha", getCitasPorFecha);
 router.get("/citasPorFechaYRango", getCitasPorFechaYRango);
 router.get("/cita/:idCita", getCitaPorId);
 router.get('/citas/correo', getCitasPorCorreo);
+router.get("/promedioCitas",getServiceCategoryAverages);
 
 
 
@@ -205,6 +213,7 @@ router.get('/tipoContratacion/:ID_Tipo_Contratacion', getTipoContratacionById);
 router.get('/servicios-excluidos', getServiciosExcluidos);
 router.get('/horas-disponibles/:fecha', getHorasDisponiblesPorFecha);
 router.get("/Contratacion/:userId",getContratacionById);
+router.get("/promedioTipoContrataciones",getContractationCategoryAverages);
 
 
 router.get("/MiPerfil/:userId",getMiPerfilById);
@@ -230,5 +239,13 @@ router.post("/registrarDonacion",registrarDonacion);
 
 //---------------------------Donaciones---------------------------
 router.get("/donaciones",getDonaciones);
+router.get("/totalDonaciones",getTotalDonations);
+
+
+//---------------------------Feedback ----------------------------
+router.get("/feedback",getFeedbackRating);
+router.get("/categoriaFeedback",getFeedbackCategoryPercentages);
 
 module.exports =  router;
+
+

@@ -16,3 +16,25 @@ exports.getDonaciones = async (req, res)=> {
      res.send(error.message);
     }
 };
+
+exports.getTotalDonations = async (req, res) => {
+    try {
+      // Conexión a la base de datos
+      const pool = await getConnection();
+  
+      // Consulta SQL para sumar los montos
+      const result = await pool.request().query(`
+        SELECT SUM(monto) AS totalDonations FROM tbl_Donaciones
+      `);
+  
+      // Extraer el total de la respuesta
+      const { totalDonations } = result.recordset[0];
+  
+      // Enviar la respuesta en formato JSON
+      res.json({ totalDonations });
+    } catch (error) {
+      // Manejo de errores
+      res.status(500);
+      res.send(error.message);
+    }
+};

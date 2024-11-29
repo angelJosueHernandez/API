@@ -198,6 +198,21 @@ GET http://localhost:3000/historialMedicoId/2
 ###
 GET http://localhost:3000/MiPerfil/correo/20210654@uthh.edu.mx
 
+###
+GET http://localhost:3000/feedback
+
+###
+GET http://localhost:3000/categoriaFeedback
+
+###
+GET http://localhost:3000/totalDonaciones
+
+###
+GET http://localhost:3000/promedioCitas
+
+###
+GET http://localhost:3000/promedioTipoContrataciones
+
 ### Actualizar el estado de la cuenta
 PUT http://localhost:3000/userCuenta/pedroreyejj@gmail.com
 Content-Type: application/json

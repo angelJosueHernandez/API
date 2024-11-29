@@ -626,3 +626,43 @@ exports.getContratacionById = async (req, res) => {
       res.status(500).json({ msg: "Error al cancelar la contratación", error: error.message });
     }
   };
+
+  //--------------------------------- Promedio de los tipos de contrataciones----------------
+
+  exports.getContractationCategoryAverages = async (req, res) => {
+    try {
+      // Conexión a la base de datos
+      const pool = await getConnection();
+
+      // Consulta SQL para contar las contrataciones por tipo (ID_Tipo_Contratacion)
+      const result = await pool.request().query(`
+          SELECT 
+              ID_Tipo_Contratacion,
+              COUNT(*) AS total_contrataciones
+          FROM tbl_Contratacion_Ambulancia
+          GROUP BY ID_Tipo_Contratacion
+      `);
+
+      // Crear un objeto para mapear los ID de tipo de contratación con sus nombres y conteos
+      const contractCounts = result.recordset.reduce((acc, row) => {
+          acc[row.ID_Tipo_Contratacion] = row.total_contrataciones;
+          return acc;
+      }, {});
+
+      // Total de contrataciones registradas
+      const totalContrataciones = Object.values(contractCounts).reduce((sum, count) => sum + count, 0);
+
+      // Crear el objeto con los promedios por tipo de contratación
+      const averages = {
+          "Eventos": ((contractCounts['EVEN'] || 0) / totalContrataciones * 100).toFixed(1),
+          "Traslados": ((contractCounts['TRAS'] || 0) / totalContrataciones * 100).toFixed(1),
+      };
+
+      // Enviar la respuesta en formato JSON
+      res.json({ averages });
+    } catch (error) {
+        // Manejo de errores
+        res.status(500).send(error.message);
+    }
+  };
+  

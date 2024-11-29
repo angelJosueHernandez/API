@@ -1395,3 +1395,53 @@ exports.registrarDonacion = async (req, res) => {
   }
 };
 
+//---------------------------------- autenticacion login Admin -------------------------------
+exports.authenticateAdmin = async (req, res) => {
+  const { correo, contraseña } = req.body;
+  const clientIp = req.clientIp;
+  console.log("IP del cliente:", clientIp);
+  let userId;
+  try {
+    const pool = await getConnection();
+    const result = await pool.request()
+        .input("correo", correo)
+        .query(querys.getUserLogin);
+
+    if (result.recordset.length === 0) {
+        // Si no se encuentra ningún usuario con el correo proporcionado
+        return res.status(401).json({ mensaje: "Este correo no coincide con ningún correo registrado" });
+
+    }
+
+    const user = result.recordset[0];
+    userId = user.ID_Usuario; // Asignar userId aquí
+    console.log(userId);
+
+
+    // Verificar si la cuenta está bloqueada
+    if (user.estado_Cuenta === 'Bloqueada') {
+      await insertLog( 'Inicio de Sesion Fallido',clientIp, correo,'Cuenta bloqueada','Login', '401',userId);
+        return res.status(401).json({ mensaje: "Tu cuenta está bloqueada" });
+       
+    }
+
+    const passwordMatch = await bcrypt.compare(contraseña, user.contrasena);
+    if (passwordMatch) {
+        // Si las contraseñas coinciden
+        await pool.request()
+            .input("correo", correo)
+            .query(querys.actualizarFechaInicioSesion);
+      await insertLog( 'Inicio de Sesion ',clientIp, correo,'El usuario paso la primera verificacion de identidad','Login', '200',userId);
+        return res.json({ mensaje: "Autenticación exitosa" });
+    } else {
+        // Si las contraseñas no coinciden
+        await insertLog( 'Inicio de Sesion Fallido',clientIp, correo,'Contrasena incorrecta','Login', '401',userId);
+        return res.status(401).json({ mensaje: "Contraseña incorrecta" });
+        
+    }
+  } catch (error) {
+    console.error("Error de autenticación:", error);
+    await insertLog( 'Inicio de Sesion Fallido',clientIp, correo, clientIp,'Error Autentificacion','Login', '500',userId);
+    return res.status(500).json({ mensaje: "Error de autenticación" });
+  }
+};

@@ -962,4 +962,43 @@ exports.getTipoServicios = async (req, res)=> {
   }
 };
 
+//---------------------- porcentajes de los tipos de citas -----------------------
+
+exports.getServiceCategoryAverages = async (req, res) => {
+  try {
+      // Conexión a la base de datos
+      const pool = await getConnection();
+
+      // Consulta SQL para contar las citas por servicio (ID_Servicio)
+      const result = await pool.request().query(`
+          SELECT 
+              ID_Servicio,
+              COUNT(*) AS total_citas
+          FROM tbl_Citas
+          GROUP BY ID_Servicio
+      `);
+
+      // Crear un objeto para mapear los ID de servicio con sus nombres y promedios
+      const serviceCounts = result.recordset.reduce((acc, row) => {
+          acc[row.ID_Servicio] = row.total_citas;
+          return acc;
+      }, {});
+
+      // Total de citas registradas
+      const totalCitas = Object.values(serviceCounts).reduce((sum, count) => sum + count, 0);
+
+      // Crear el objeto con los promedios por servicio
+      const averages = {
+          "Certificado medico": ((serviceCounts[1] || 0) / totalCitas * 100).toFixed(1),
+          "Toma de glucosa capilar": ((serviceCounts[2] || 0) / totalCitas * 100).toFixed(1),
+          "Certificado prenupcial": ((serviceCounts[3] || 0) / totalCitas * 100).toFixed(1),
+      };
+
+      // Enviar la respuesta en formato JSON
+      res.json({ averages });
+  } catch (error) {
+      // Manejo de errores
+      res.status(500).send(error.message);
+  }
+};
 
