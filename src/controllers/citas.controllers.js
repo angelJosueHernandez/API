@@ -5,15 +5,25 @@ const moment = require('moment-timezone');
 const nodemailer = require('nodemailer');
 
 
-exports.getCitas = async (req, res)=> {
-   try {
-    const pool = await getConnection()
-    const result= await pool.request().query(querys.getCitas)
-    res.json(result.recordset)
-   } catch (error) {
-    res.status(500);
-    res.send(error.message);
-   }
+exports.getCitas = async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool.request().query(querys.getCitas);
+
+    // Formatear la fecha y hora de cada registro
+    const citasConFormato = result.recordset.map((cita) => {
+      return {
+        ...cita,
+        fecha: moment(cita.fecha).tz('America/Mexico_City').format('YYYY-MM-DD'), // Formato de fecha
+        horario: moment(cita.horario, 'HH:mm:ss').tz('America/Mexico_City').format('hh:mm A'), // Formato de hora en 12 horas (AM/PM)
+      };
+    });
+
+    res.json(citasConFormato);
+  } catch (error) {
+    console.error("Error al obtener las citas:", error);
+    res.status(500).send(error.message);
+  }
 };
 
 exports.updateCitasById = async (req, res) => {
