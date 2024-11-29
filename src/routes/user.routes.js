@@ -95,7 +95,7 @@ const {
   updateCancelarContratacionById,
   updateFechaContratacionAmbulanciaById,
   getContratacionById,
-  getUserByEmailContratacionAm2
+  getUserByEmailContratacionAm2,
   
   getContractationCategoryAverages
 } = require("../controllers/contratación.controllers");
