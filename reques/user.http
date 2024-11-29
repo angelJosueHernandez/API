@@ -43,7 +43,7 @@ Content-Type: application/json
 
 
 ###
-GET http://localhost:3000/user/20210672@uthh.edu.mx
+GET http://localhost:3000/usuario2/20210672@uthh.edu.mx
 
 
 ###

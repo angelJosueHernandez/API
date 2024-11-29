@@ -28,7 +28,9 @@ const {
   checkoutDonacion,
   registrarFeedback,
   registrarDonacion,
-  getMiPerfilporCorreo
+  handlePaymentSheet,
+  getMiPerfilporCorreo,
+  
 } = require("../controllers/user.controllers");
 
 
@@ -93,6 +95,8 @@ const {
   updateCancelarContratacionById,
   updateFechaContratacionAmbulanciaById,
   getContratacionById,
+  getUserByEmailContratacionAm2
+  
   getContractationCategoryAverages
 } = require("../controllers/contratación.controllers");
 
@@ -206,7 +210,9 @@ router.post("/CrearContratacionSinRegistrar",createNewContratacionSinRegistrar);
 router.post("/CrearContratacion",createNewContratacion2);
 router.get("/tipoContratacion",getTipoContratacion);
 router.get('/ambulancias-disponibles', getAvailableAmbulances);
+
 router.get('/usuario/:correo', getUserByEmailContratacionAm);
+router.get('/usuario2/:correo', getUserByEmailContratacionAm2);
 router.post('/enviar-correo-contratacion', enviarCorreoContratacion);
 router.get('/ambulancia/:AmbulanciaID', getAmbulanciaById);
 router.get('/tipoContratacion/:ID_Tipo_Contratacion', getTipoContratacionById);
@@ -236,6 +242,8 @@ router.post("/checkout",checkoutDonacion);
 
 router.post("/registrarFeedback",registrarFeedback);
 router.post("/registrarDonacion",registrarDonacion);
+router.post('/payment-sheet',handlePaymentSheet);
+
 
 //---------------------------Donaciones---------------------------
 router.get("/donaciones",getDonaciones);

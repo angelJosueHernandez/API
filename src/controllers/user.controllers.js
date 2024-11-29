@@ -1445,3 +1445,44 @@ exports.authenticateAdmin = async (req, res) => {
     return res.status(500).json({ mensaje: "Error de autenticación" });
   }
 };
+// Función para manejar el Payment Sheet de Stripe
+exports.handlePaymentSheet = async (req, res) => {
+  const { amount } = req.body;
+
+  // Validar que se reciba el monto
+  if (!amount) {
+    return res.status(400).json({ mensaje: "Por favor, proporcione el monto de la transacción." });
+  }
+
+  try {
+    // Crear un cliente en Stripe
+    const customer = await stripe.customers.create();
+
+    // Crear una clave efímera asociada al cliente
+    const ephemeralKey = await stripe.ephemeralKeys.create(
+      { customer: customer.id },
+      { apiVersion: '2024-06-20' }
+    );
+
+    // Crear un Intento de Pago (PaymentIntent)
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount, // Monto recibido desde el frontend (en centavos)
+      currency: 'mxn', // Moneda: peso mexicano
+      customer: customer.id,
+      automatic_payment_methods: {
+        enabled: true, // Habilitar métodos de pago automáticos
+      },
+    });
+
+    // Responder con los datos necesarios para el cliente
+    res.status(200).json({
+      paymentIntent: paymentIntent.client_secret,
+      ephemeralKey: ephemeralKey.secret,
+      customer: customer.id,
+      publishableKey: 'pk_test_51QJQ5uDIWznX38uOqRNbGsjduSvo12H8NQBCqVdIMS3U28yXBQyk6TW8NReNgcZMWfQWayD2i2pXtFIvYJoIUsZf00eIziHzHG', // Reemplazar con tu clave publicable real
+    });
+  } catch (error) {
+    console.error("Error al manejar el Payment Sheet:", error);
+    res.status(500).json({ mensaje: "Error al manejar el Payment Sheet", error: error.message });
+  }
+};
