@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const Stripe = require('stripe')
 const accountSid = process.env.ACCOUNT_SID;
 const authToken = process.env.AUTH_TOKEN;
+const moment = require('moment-timezone');
 
 const client = require('twilio')(accountSid, authToken);
 
@@ -23,15 +24,35 @@ const verifyToken2 = (token) => {
   }
 }
 
-exports.getUser = async (req, res)=> {
-   try {
-    const pool = await getConnection()
-    const result= await pool.request().query(querys.getUser)
-    res.json(result.recordset)
-   } catch (error) {
-    res.status(500);
-    res.send(error.message);
-   }
+exports.getUser = async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool.request().query(querys.getUser);
+
+    // Formatear las fechas para cada registro
+    const usuariosConFormato = result.recordset.map((usuario) => {
+      return {
+        ...usuario,
+        fecha_Registro: usuario.fecha_Registro
+          ? moment(usuario.fecha_Registro).tz('America/Mexico_City').format('YYYY-MM-DD HH:mm:ss')
+          : null, // Manejo de valores nulos
+        fecha_Sesion: usuario.fecha_Sesion
+          ? moment(usuario.fecha_Sesion).tz('America/Mexico_City').format('YYYY-MM-DD HH:mm:ss')
+          : null, // Manejo de valores nulos
+        fecha_bloqueo: usuario.fecha_bloqueo
+          ? moment(usuario.fecha_bloqueo).tz('America/Mexico_City').format('YYYY-MM-DD HH:mm:ss')
+          : null, // Manejo de valores nulos
+        fecha_token: usuario.fecha_token
+          ? moment(usuario.fecha_token).tz('America/Mexico_City').format('YYYY-MM-DD HH:mm:ss')
+          : null, // Manejo de valores nulos
+      };
+    });
+
+    res.json(usuariosConFormato);
+  } catch (error) {
+    console.error("Error al obtener los usuarios:", error);
+    res.status(500).send(error.message);
+  }
 };
 
 

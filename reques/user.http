@@ -213,6 +213,12 @@ GET http://localhost:3000/promedioCitas
 ###
 GET http://localhost:3000/promedioTipoContrataciones
 
+###
+GET http://localhost:3000/Suministro
+
+###
+GET http://localhost:3000/user
+
 ### Actualizar el estado de la cuenta
 PUT http://localhost:3000/userCuenta/pedroreyejj@gmail.com
 Content-Type: application/json

@@ -4,17 +4,28 @@ const bcrypt = require('bcryptjs');
 const cron = require('node-cron');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
+const moment = require('moment-timezone');
 
-exports.getSuminitros = async (req, res)=> {
-    try {
-     const pool = await getConnection()
-     const result= await pool.request().query(querys.getSuminitros)
-     res.json(result.recordset)
-    } catch (error) {
-     res.status(500);
-     res.send(error.message);
-    }
- };
+exports.getSuminitros = async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool.request().query(querys.getSuminitros);
+
+    // Formatear la fecha y hora de cada registro
+    const suministrosConFormato = result.recordset.map((suministro) => {
+      return {
+        ...suministro,
+        fecha_caducidad: moment(suministro.fecha_caducidad).tz('America/Mexico_City').format('YYYY-MM-DD'), // Formato de fecha
+        
+      };
+    });
+
+    res.json(suministrosConFormato);
+  } catch (error) {
+    console.error("Error al obtener los suministros:", error);
+    res.status(500).send(error.message);
+  }
+};
 
 exports.registrarSuministro = async (req, res) => {
     const { clave,nombre_insumo,cantidad,lote,fecha_caducidad} = req.body;
