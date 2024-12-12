@@ -17,6 +17,30 @@ exports.getContratacionAmbulancias = async (req, res)=> {
   }
 };
 
+exports.getContratacionAmbulanciaById = async (req, res) => {
+  try {
+    const { ID_Contratacion } = req.params; // Obtén el parámetro de la URL
+    
+    if (!ID_Contratacion) {
+      return res.status(400).json({ message: "El ID_Contratacion es requerido" });
+    }
+
+    const pool = await getConnection(); // Obtén la conexión
+    const result = await pool
+      .request()
+      .input('ID_Contratacion', ID_Contratacion) // Configura el parámetro
+      .query('SELECT * FROM tbl_Contratacion_Ambulancia WHERE ID_Contratacion = @ID_Contratacion'); // Consulta con el parámetro
+    
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ message: "Contratación no encontrada" });
+    }
+
+    res.json(result.recordset[0]); // Devuelve el primer registro encontrado
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+};
+
 exports.createNewContratacionSinRegistrar = async (req, res) => {
     const { nombre, apellido_Paterno, apellido_Materno, inicio_Traslado, escala, destino_Traslado, motivo, material_especifico,
         fecha, horario, ID_Tipo_Contratacion} = req.body;
@@ -62,55 +86,125 @@ exports.createNewContratacionSinRegistrar = async (req, res) => {
 };
 
 
-exports.createNewContratacion = async (req, res) => {
-    const { nombre, apellido_Paterno, apellido_Materno, inicio_Traslado, escala, destino_Traslado, motivo, material_especifico,
-        fecha, horario, ID_Usuario, ID_Tipo_Contratacion} = req.body;
-  
-    // Verificar si todos los campos están presentes
-    if (nombre == null || apellido_Paterno == null || apellido_Materno == null || inicio_Traslado == null || escala == null || 
-        destino_Traslado == null || motivo == null || material_especifico == null || fecha == null || horario == null ||
-        ID_Usuario == null ||  ID_Tipo_Contratacion == null) {
+exports.createNewContratacionAdmin = async (req, res) => {
+  const {
+      nombre, apellido_Paterno, apellido_Materno, inicio_Traslado, escala, destino_Traslado, motivo,
+      material_especifico, fecha, horario, ID_Asociado, ID_Tipo_Contratacion, AmbulanciaID
+  } = req.body;
+
+  // Verificar si todos los campos están presentes
+  if (!nombre || !apellido_Paterno || !apellido_Materno || !inicio_Traslado || !escala || 
+      !destino_Traslado || !motivo || !material_especifico || !fecha || !horario ||
+      !ID_Asociado || !ID_Tipo_Contratacion || !AmbulanciaID) {
       return res.status(400).json({ msg: "Por favor llene todos los campos" });
-    }
-  
-    try {
+  }
+
+  try {
       const pool = await getConnection();
-      
 
-      // Convertir el horario a un formato válido para SQL Server usando moment
-      const formattedHorario = moment(horario, 'HH:mm:ss').format('HH:mm:ss');
-      console.log('Formatted Horario:', formattedHorario); // Agregar logueo
+      // Asegurarse de que el horario esté en el formato 'HH:mm:ss'
+      const formattedHorario = moment(horario, 'HH:mm').format('HH:mm:ss');
+      console.log('formattedHorario:', formattedHorario);
 
-      // Insertar el registro con horario como VarChar
-      await pool.request()
-          .input("nombre", sql.VarChar, nombre)
-          .input("apellido_Paterno", sql.VarChar, apellido_Paterno)
-          .input("apellido_Materno", sql.VarChar, apellido_Materno)
-          .input("inicio_Traslado", sql.VarChar, inicio_Traslado)
-          .input("escala", sql.VarChar, escala)
-          .input("destino_Traslado", sql.VarChar, destino_Traslado)
-          .input("motivo", sql.VarChar, motivo)
-          .input("material_especifico", sql.VarChar, material_especifico)
+      // Verificar si ya existe una contratación para la misma fecha y horario
+      const existingContract = await pool.request()
           .input("fecha", sql.Date, fecha)
-          .input("horario", sql.VarChar, formattedHorario) // Insertar como VarChar
-          .input("ID_Usuario", sql.Int, ID_Usuario)
-          .input('ID_Asociado', sql.Int, null) // Esto representa NULL en SQL Server
-          .input("ID_Tipo_Contratacion", sql.VarChar, ID_Tipo_Contratacion)
-          // Usa la escala cifrada
-          .query(querys.createContratacion);
+          .input("horario", sql.VarChar, formattedHorario)
+          .query("SELECT * FROM tbl_Contratacion_Ambulancia WHERE fecha = @fecha AND horario = @horario");
 
-      // Actualizar el campo horario a tipo time
-      await pool.request()
-            .input("ID_Usuario", sql.Int, ID_Usuario)
-            .input("ID_Asociado", sql.Int, ID_Asociado)
-            .input("fecha", sql.Date, fecha)
-            .query("UPDATE tbl_Contratacion_Ambulancia SET horario = CAST(horario AS time) WHERE ID_Usuario = @ID_Usuario AND ID_Asociado = @ID_Asociado AND fecha = @fecha");
+      console.log('existingContract:', existingContract);
 
-      // Enviar respuesta de éxito
-      res.json({ nombre, apellido_Paterno, apellido_Materno, inicio_Traslado, escala, destino_Traslado, motivo,
-          material_especifico, fecha, horario: formattedHorario, ID_Usuario, ID_Tipo_Contratacion });
+      if (existingContract.recordset && existingContract.recordset.length > 0) {
+          const currentContract = existingContract.recordset[0];
+          console.log('currentContract:', currentContract);
+
+          // Verificar el estado de la contratación existente
+          if (currentContract.estado === 'rechazada' || currentContract.estado === 'cancelada') {
+              // Actualizar la contratación existente con los nuevos datos
+              await pool.request()
+                  .input("nombre", sql.VarChar, nombre)
+                  .input("apellido_Paterno", sql.VarChar, apellido_Paterno)
+                  .input("apellido_Materno", sql.VarChar, apellido_Materno)
+                  .input("inicio_Traslado", sql.VarChar, inicio_Traslado)
+                  .input("escala", sql.VarChar, escala)
+                  .input("destino_Traslado", sql.VarChar, destino_Traslado)
+                  .input("motivo", sql.VarChar, motivo)
+                  .input("material_especifico", sql.VarChar, material_especifico)
+                  .input("fecha", sql.Date, fecha)
+                  .input("horario", sql.VarChar, formattedHorario)
+                  .input("ID_Usuario", sql.Int, null)
+                  .input('ID_Asociado', sql.Int, ID_Asociado)
+                  .input("ID_Tipo_Contratacion", sql.VarChar, ID_Tipo_Contratacion)
+                  .input("estado", sql.VarChar, 'revision')
+                  .input("AmbulanciaID", sql.Int, AmbulanciaID)
+                  .input("ID_Contratacion", sql.Int, currentContract.ID_Contratacion) // ID de la contratación actual
+                  .query("UPDATE tbl_Contratacion_Ambulancia SET nombre = @nombre, apellido_Paterno = @apellido_Paterno, apellido_Materno = @apellido_Materno, inicio_Traslado = @inicio_Traslado, escala = @escala, destino_Traslado = @destino_Traslado, motivo = @motivo, material_especifico = @material_especifico, fecha = @fecha, horario = @horario, ID_Tipo_Contratacion = @ID_Tipo_Contratacion, estado = @estado, AmbulanciaID = @AmbulanciaID, ID_Asociado = @ID_Asociado, ID_Usuario = @ID_Usuario WHERE ID_Contratacion = @ID_Contratacion");
+
+              // Actualizar el campo horario a tipo time
+              await pool.request()
+                  .input("ID_Contratacion", sql.Int, currentContract.ID_Contratacion)
+                  .query("UPDATE tbl_Contratacion_Ambulancia SET horario = CAST(horario AS time) WHERE ID_Contratacion = @ID_Contratacion");
+
+              // Actualizar el estado de la ambulancia a 'ocupada'
+              await pool.request()
+                  .input("AmbulanciaID", sql.Int, AmbulanciaID)
+                  .query("UPDATE Ambulancias SET EstadoActual = 'Ocupada' WHERE AmbulanciaID = @AmbulanciaID");
+
+              return res.json({ msg: "Contratación actualizada correctamente", estado: 'revision' });
+          } else {
+              return res.status(400).json({ msg: "Ya hay una contratación para esa fecha y hora" });
+          }
+      } else {
+          // Insertar una nueva contratación y obtener el ID generado
+          const result = await pool.request()
+              .input("nombre", sql.VarChar, nombre)
+              .input("apellido_Paterno", sql.VarChar, apellido_Paterno)
+              .input("apellido_Materno", sql.VarChar, apellido_Materno)
+              .input("inicio_Traslado", sql.VarChar, inicio_Traslado)
+              .input("escala", sql.VarChar, escala)
+              .input("destino_Traslado", sql.VarChar, destino_Traslado)
+              .input("motivo", sql.VarChar, motivo)
+              .input("material_especifico", sql.VarChar, material_especifico)
+              .input("fecha", sql.Date, fecha)
+              .input("horario", sql.VarChar, formattedHorario) // Insertar como VarChar
+              .input("ID_Usuario", sql.Int, null)
+              .input('ID_Asociado', sql.Int, ID_Asociado) // Mandar como null
+              .input("ID_Tipo_Contratacion", sql.VarChar, ID_Tipo_Contratacion)
+              .input("estado", sql.VarChar, 'revision')
+              .input("AmbulanciaID", sql.Int, AmbulanciaID)
+              .query(`
+                  INSERT INTO tbl_Contratacion_Ambulancia (
+                      nombre, apellido_Paterno, apellido_Materno, inicio_Traslado, escala, destino_Traslado, motivo,
+                      material_especifico, fecha, horario, ID_Usuario, ID_Asociado, ID_Tipo_Contratacion, estado, AmbulanciaID
+                  )
+                  VALUES (
+                      @nombre, @apellido_Paterno, @apellido_Materno, @inicio_Traslado, @escala, @destino_Traslado, @motivo,
+                      @material_especifico, @fecha, @horario, @ID_Usuario, @ID_Asociado, @ID_Tipo_Contratacion, @estado, @AmbulanciaID
+                  );
+                  SELECT SCOPE_IDENTITY() AS ID_Contratacion;
+              `);
+
+          console.log('result:', result);
+
+          if (result.recordset && result.recordset.length > 0) {
+              const newContractId = result.recordset[0].ID_Contratacion;
+
+              // Actualizar el campo horario a tipo time
+              await pool.request()
+                  .input("ID_Contratacion", sql.Int, newContractId)
+                  .query("UPDATE tbl_Contratacion_Ambulancia SET horario = CAST(horario AS time) WHERE ID_Contratacion = @ID_Contratacion");
+
+              // Actualizar el estado de la ambulancia a 'ocupada'
+              await pool.request()
+                  .input("AmbulanciaID", sql.Int, AmbulanciaID)
+                  .query("UPDATE Ambulancias SET EstadoActual = 'Ocupada' WHERE AmbulanciaID = @AmbulanciaID");
+
+              return res.json({ msg: "Contratación registrada correctamente", estado: 'revision' });
+          } else {
+              return res.status(500).json({ msg: "Error al registrar la contratación" });
+          }
+      }
   } catch (error) {
-      // Enviar respuesta de error
       console.error('Error al crear la contratación:', error); // Agregar logueo del error
       res.status(500).json({ error: error.message });
   }

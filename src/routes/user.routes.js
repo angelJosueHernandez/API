@@ -97,7 +97,9 @@ const {
   getContratacionById,
   getUserByEmailContratacionAm2,
   
-  getContractationCategoryAverages
+  getContractationCategoryAverages,
+  getContratacionAmbulanciaById,
+  createNewContratacionAdmin
 } = require("../controllers/contratación.controllers");
 
 
@@ -206,8 +208,10 @@ router.get('/tiposServicio', getTiposServicio);
 
 //Rutas de Contratacion de Ambulancias
 router.get("/ContratacionAmbulancias",getContratacionAmbulancias);
+router.get('/ContratacionAmbulancia/:ID_Contratacion', getContratacionAmbulanciaById);
 router.post("/CrearContratacionSinRegistrar",createNewContratacionSinRegistrar);
 router.post("/CrearContratacion",createNewContratacion2);
+router.post("/CrearContratacionAdmin",createNewContratacionAdmin);
 router.get("/tipoContratacion",getTipoContratacion);
 router.get('/ambulancias-disponibles', getAvailableAmbulances);
 
