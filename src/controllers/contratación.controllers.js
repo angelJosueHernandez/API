@@ -119,7 +119,7 @@ exports.createNewContratacionAdmin = async (req, res) => {
           console.log('currentContract:', currentContract);
 
           // Verificar el estado de la contratación existente
-          if (currentContract.estado === 'rechazada' || currentContract.estado === 'cancelada') {
+          if (currentContract.estado === 'rechazada' || currentContract.estado === 'Cancelado') {
               // Actualizar la contratación existente con los nuevos datos
               await pool.request()
                   .input("nombre", sql.VarChar, nombre)
@@ -138,7 +138,7 @@ exports.createNewContratacionAdmin = async (req, res) => {
                   .input("estado", sql.VarChar, 'revision')
                   .input("AmbulanciaID", sql.Int, AmbulanciaID)
                   .input("ID_Contratacion", sql.Int, currentContract.ID_Contratacion) // ID de la contratación actual
-                  .query("UPDATE tbl_Contratacion_Ambulancia SET nombre = @nombre, apellido_Paterno = @apellido_Paterno, apellido_Materno = @apellido_Materno, inicio_Traslado = @inicio_Traslado, escala = @escala, destino_Traslado = @destino_Traslado, motivo = @motivo, material_especifico = @material_especifico, fecha = @fecha, horario = @horario, ID_Tipo_Contratacion = @ID_Tipo_Contratacion, estado = @estado, AmbulanciaID = @AmbulanciaID, ID_Asociado = @ID_Asociado, ID_Usuario = @ID_Usuario WHERE ID_Contratacion = @ID_Contratacion");
+                  .query("UPDATE tbl_Contratacion_Ambulancia SET nombre = @nombre, apellido_Paterno = @apellido_Paterno, apellido_Materno = @apellido_Materno, inicio_Traslado = @inicio_Traslado, escala = @escala, destino_Traslado = @destino_Traslado, motivo = @motivo, material_especifico = @material_especifico, fecha = @fecha, horario = @horario, ID_Usuario = @ID_Usuario, ID_Asociado = @ID_Asociado, ID_Tipo_Contratacion = @ID_Tipo_Contratacion, estado = @estado, AmbulanciaID = @AmbulanciaID WHERE ID_Contratacion = @ID_Contratacion");
 
               // Actualizar el campo horario a tipo time
               await pool.request()
@@ -210,6 +210,102 @@ exports.createNewContratacionAdmin = async (req, res) => {
   }
 };
 
+const transporter = nodemailer.createTransport({
+  service: 'Gmail',
+  auth: {
+    user: 'cruzrojasuport@gmail.com',
+    pass: 'onopzodxqxheqwnz'
+  }
+});
+
+exports.updateContratacionEstado = async (req, res) => {
+  const { ID_Contratacion } = req.params;
+  const { estado, motivo, precio } = req.body;
+
+  if (estado === 'aceptada' && (!motivo || !precio)) {
+    return res.status(400).json({ error: 'Motivo y precio son requeridos para aceptar la solicitud' });
+  }
+  if (estado === 'rechazada' && !motivo) {
+      return res.status(400).json({ error: 'Motivo es requerido para rechazar la solicitud' });
+  }
+
+  console.log('Datos recibidos en el servidor:', req.body);
+
+  try {
+    console.log('ID_Contratacion recibido:', ID_Contratacion);
+    const pool = await getConnection();
+    console.log('Ejecutando actualización de estado...');
+    await pool.request()
+      .input('ID_Contratacion', sql.Int, ID_Contratacion)
+      .input('estado', sql.VarChar, estado)
+      .query('UPDATE tbl_Contratacion_Ambulancia SET estado = @estado WHERE ID_Contratacion = @ID_Contratacion');
+  
+    // Si el estado es "rechazada", actualizar el estado de la ambulancia a "Disponible"
+    if (estado === 'rechazada') {
+      console.log('Obteniendo AmbulanciaID asociado a la contratación...');
+      const ambulanciaResult = await pool.request()
+        .input('ID_Contratacion', sql.Int, ID_Contratacion)
+        .query('SELECT AmbulanciaID FROM tbl_Contratacion_Ambulancia WHERE ID_Contratacion = @ID_Contratacion');
+
+      const { AmbulanciaID } = ambulanciaResult.recordset[0];
+
+      if (AmbulanciaID) {
+        console.log('Actualizando EstadoActual de la ambulancia a "Disponible"...');
+        await pool.request()
+          .input('AmbulanciaID', sql.Int, AmbulanciaID)
+          .query('UPDATE Ambulancias SET EstadoActual = \'Disponible\' WHERE AmbulanciaID = @AmbulanciaID');
+        console.log('EstadoActual actualizado correctamente.');
+      } else {
+        console.error('No se encontró AmbulanciaID asociado a la contratación.');
+      }
+    }
+    
+    console.log('Consulta SQL para obtener usuario...');
+    const result = await pool.request()
+      .input('ID_Contratacion', sql.Int, ID_Contratacion)
+      .query('SELECT U.correo, CA.nombre, CA.apellido_Paterno, CA.apellido_Materno FROM tbl_Contratacion_Ambulancia CA JOIN tbl_Usuarios U ON CA.ID_Usuario = U.ID_Usuario WHERE CA.ID_Contratacion = @ID_Contratacion');
+
+    console.log('Resultado de la consulta SQL:', result.recordset);
+    const user = result.recordset[0];
+
+    if (!user) {
+      console.error('No se encontró un usuario relacionado con la contratación');
+      return res.status(404).json({ error: 'No se encontró un usuario relacionado con la contratación' });
+    }
+
+    const subject = estado === 'aceptada' ? 'Solicitud de Contratación Aceptada' : 'Solicitud de Contratación Rechazada';
+    const text = `
+      Hola ${user.nombre} ${user.apellido_Paterno} ${user.apellido_Materno},
+      Su solicitud de contratación de ambulancia ha sido ${estado}.
+      Motivo: ${motivo}
+      ${estado === 'aceptada' ? `Precio: ${precio} `: ''}
+      Gracias por confiar en nosotros.
+      Atentamente,
+      Equipo de Ambulancias
+    `;
+
+    const mailOptions = {
+      from: 'cruzrojasuport@gmail.com',
+      to: user.correo,
+      subject: subject,
+      text: text
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error al enviar el correo:', error);
+        return res.status(500).json({ error: 'Error al enviar el correo', details: error.toString() });
+        //return res.status(500).send(error.toString());
+      }
+      res.status(200).send('Email enviado: ' + info.response);
+    });
+
+  } catch (error) {
+      console.error("Error al actualizar el estado y enviar el correo:", error);
+      res.status(500).json({ error: error.message, stack: error.stack });
+    }
+};
+
 exports.getTipoContratacion = async (req, res)=> {
   try {
    const pool = await getConnection()
@@ -232,11 +328,11 @@ exports.getAvailableAmbulances = async (req, res) => {
         const result = await pool.request().query(querys.getAvailableAmbulances);
 
         if (result.recordset.length > 0) {
-            // Hay ambulancias disponibles
-            res.json(result.recordset);
+          // Hay ambulancias disponibles
+          res.status(200).json(result.recordset);
         } else {
             // No hay ambulancias disponibles
-            res.status(400).json({ msg: "No hay ambulancias disponibles en este momento" });
+            res.status(200).json({ msg: "No hay ambulancias disponibles en este momento" });
         }
     } catch (error) {
         // Enviar respuesta de error
@@ -280,7 +376,7 @@ exports.createNewContratacion2 = async (req, res) => {
             console.log('currentContract:', currentContract);
 
             // Verificar el estado de la contratación existente
-            if (currentContract.estado === 'rechazada' || currentContract.estado === 'cancelada') {
+            if (currentContract.estado === 'rechazada' || currentContract.estado === 'Cancelado') {
                 // Actualizar la contratación existente con los nuevos datos
                 await pool.request()
                     .input("nombre", sql.VarChar, nombre)
