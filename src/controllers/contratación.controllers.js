@@ -317,10 +317,29 @@ exports.getTipoContratacion = async (req, res)=> {
  }
 };
 
-
-
-
 exports.getAvailableAmbulances = async (req, res) => {
+  try {
+      const pool = await getConnection();
+
+      // Obtener ambulancias disponibles
+      const result = await pool.request().query(querys.getAvailableAmbulances);
+
+      if (result.recordset.length > 0) {
+          // Hay ambulancias disponibles
+          res.json(result.recordset);
+      } else {
+          // No hay ambulancias disponibles
+          res.status(400).json({ msg: "No hay ambulancias disponibles en este momento" });
+      }
+  } catch (error) {
+      // Enviar respuesta de error
+      console.error('Error al obtener las ambulancias disponibles:', error);
+      res.status(500).json({ error: error.message });
+  }
+};
+
+
+exports.getAvailableAmbulancesAdmin = async (req, res) => {
     try {
         const pool = await getConnection();
 
