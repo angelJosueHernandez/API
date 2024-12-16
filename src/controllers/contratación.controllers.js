@@ -135,7 +135,7 @@ exports.createNewContratacionAdmin = async (req, res) => {
                   .input("ID_Usuario", sql.Int, null)
                   .input('ID_Asociado', sql.Int, ID_Asociado)
                   .input("ID_Tipo_Contratacion", sql.VarChar, ID_Tipo_Contratacion)
-                  .input("estado", sql.VarChar, 'revision')
+                  .input("estado", sql.VarChar, 'aceptada')
                   .input("AmbulanciaID", sql.Int, AmbulanciaID)
                   .input("ID_Contratacion", sql.Int, currentContract.ID_Contratacion) // ID de la contratación actual
                   .query("UPDATE tbl_Contratacion_Ambulancia SET nombre = @nombre, apellido_Paterno = @apellido_Paterno, apellido_Materno = @apellido_Materno, inicio_Traslado = @inicio_Traslado, escala = @escala, destino_Traslado = @destino_Traslado, motivo = @motivo, material_especifico = @material_especifico, fecha = @fecha, horario = @horario, ID_Usuario = @ID_Usuario, ID_Asociado = @ID_Asociado, ID_Tipo_Contratacion = @ID_Tipo_Contratacion, estado = @estado, AmbulanciaID = @AmbulanciaID WHERE ID_Contratacion = @ID_Contratacion");
@@ -150,7 +150,7 @@ exports.createNewContratacionAdmin = async (req, res) => {
                   .input("AmbulanciaID", sql.Int, AmbulanciaID)
                   .query("UPDATE Ambulancias SET EstadoActual = 'Ocupada' WHERE AmbulanciaID = @AmbulanciaID");
 
-              return res.json({ msg: "Contratación actualizada correctamente", estado: 'revision' });
+              return res.json({ msg: "Contratación actualizada correctamente", estado: 'aceptada' });
           } else {
               return res.status(400).json({ msg: "Ya hay una contratación para esa fecha y hora" });
           }
@@ -170,7 +170,7 @@ exports.createNewContratacionAdmin = async (req, res) => {
               .input("ID_Usuario", sql.Int, null)
               .input('ID_Asociado', sql.Int, ID_Asociado) // Mandar como null
               .input("ID_Tipo_Contratacion", sql.VarChar, ID_Tipo_Contratacion)
-              .input("estado", sql.VarChar, 'revision')
+              .input("estado", sql.VarChar, 'aceptada')
               .input("AmbulanciaID", sql.Int, AmbulanciaID)
               .query(`
                   INSERT INTO tbl_Contratacion_Ambulancia (
@@ -199,7 +199,7 @@ exports.createNewContratacionAdmin = async (req, res) => {
                   .input("AmbulanciaID", sql.Int, AmbulanciaID)
                   .query("UPDATE Ambulancias SET EstadoActual = 'Ocupada' WHERE AmbulanciaID = @AmbulanciaID");
 
-              return res.json({ msg: "Contratación registrada correctamente", estado: 'revision' });
+              return res.json({ msg: "Contratación registrada correctamente", estado: 'aceptada' });
           } else {
               return res.status(500).json({ msg: "Error al registrar la contratación" });
           }
