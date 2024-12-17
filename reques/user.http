@@ -1,7 +1,7 @@
 GET   https://api-beta-mocha-59.vercel.app/user
 ### autenticate 
 
-GET   http://localhost:3000/totalUsuarios
+GET   http://localhost:3000/citasConteoGrafica
 
 #####
 GET http://localhost:3000/tiposServicios/

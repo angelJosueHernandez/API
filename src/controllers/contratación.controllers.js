@@ -897,3 +897,48 @@ exports.getContratacionById = async (req, res) => {
     }
   };
   
+  
+  exports.getConteoTrasladosPorEstado = async (req, res) => {
+    try {
+      // Conectamos a la base de datos
+      const pool = await getConnection();
+  
+      // Consulta para contar los traslados por estado
+      const query = `
+        SELECT estado, COUNT(*) AS conteo
+        FROM tbl_Contratacion_Ambulancia
+        GROUP BY estado
+      `;
+  
+      // Ejecutamos la consulta
+      const result = await pool.request().query(query);
+  
+      // Inicializamos el objeto de conteo con valores por defecto
+      const conteoEstados = {
+        Cancelado: 0,
+        Aceptada: 0,
+        Realizada: 0,
+        Rechazada: 0
+      };
+  
+      // Verificamos si el resultado tiene registros
+      if (result.recordset && result.recordset.length > 0) {
+        // Recorremos los resultados para llenar el conteo de cada estado
+        result.recordset.forEach(row => {
+          // Comprobamos si el estado está en el objeto conteoEstados
+          if (conteoEstados.hasOwnProperty(row.estado)) {
+            conteoEstados[row.estado] = row.conteo;
+          }
+        });
+      }
+  
+      // Enviamos los resultados al frontend
+      res.json(conteoEstados);
+    } catch (error) {
+      // Log de error más detallado
+      console.error('Error al obtener los datos de contrataciones:', error);
+  
+      // Enviamos el error con más detalles
+      res.status(500).send(`Error al obtener los datos de contrataciones: ${error.message}`);
+    }
+  };

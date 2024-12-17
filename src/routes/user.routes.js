@@ -77,7 +77,8 @@ const {
   updateCancelarCitaById,
   getCitasPorCorreoPagina,
   getTipoServicios,
-  getServiceCategoryAverages
+  getServiceCategoryAverages,
+  getConteoCitasPorEstado,
 
 } = require("../controllers/citas.controllers");
 
@@ -101,7 +102,8 @@ const {
   getContratacionAmbulanciaById,
   createNewContratacionAdmin,
   updateContratacionEstado,
-  getAvailableAmbulances
+  getAvailableAmbulances,
+  getConteoTrasladosPorEstado,
 } = require("../controllers/contratación.controllers");
 
 
@@ -124,6 +126,7 @@ const {
   getFeedbackCategoryPercentages
   
 } = require("../controllers/feedback.controllers");
+const { route } = require('../../app');
 
 const router = Router();
 
@@ -203,6 +206,7 @@ router.get("/citasPorFechaYRango", getCitasPorFechaYRango);
 router.get("/cita/:idCita", getCitaPorId);
 router.get('/citas/correo', getCitasPorCorreo);
 router.get("/promedioCitas",getServiceCategoryAverages);
+router.get("/citasConteoGrafica",getConteoCitasPorEstado);
 
 
 
@@ -252,7 +256,7 @@ router.post("/registrarFeedback",registrarFeedback);
 router.post("/registrarDonacion",registrarDonacion);
 router.post('/payment-sheet',handlePaymentSheet);
 
-
+router.get('/contratacionEstadoGrafica',getConteoTrasladosPorEstado);
 //---------------------------Donaciones---------------------------
 router.get("/donaciones",getDonaciones);
 router.get("/totalDonaciones",getTotalDonations);
