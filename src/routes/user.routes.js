@@ -114,7 +114,8 @@ const {
 
 const {
   getDonaciones,
-  getTotalDonations
+  getTotalDonations,
+  getDonacionesMontoFecha
   
 } = require("../controllers/donaciones.controllers");
 
@@ -255,6 +256,7 @@ router.post('/payment-sheet',handlePaymentSheet);
 //---------------------------Donaciones---------------------------
 router.get("/donaciones",getDonaciones);
 router.get("/totalDonaciones",getTotalDonations);
+router.get("/fechaMontoDonaciones", getDonacionesMontoFecha);
 
 
 //---------------------------Feedback ----------------------------
