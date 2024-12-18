@@ -101,7 +101,8 @@ const {
   getContratacionAmbulanciaById,
   createNewContratacionAdmin,
   updateContratacionEstado,
-  getAvailableAmbulances
+  getAvailableAmbulances,
+  marcarContratacionRealizada
 } = require("../controllers/contratación.controllers");
 
 
@@ -215,6 +216,7 @@ router.post("/CrearContratacionSinRegistrar",createNewContratacionSinRegistrar);
 router.post("/CrearContratacion",createNewContratacion2);
 router.post("/CrearContratacionAdmin",createNewContratacionAdmin);
 router.put("/ContratacionAmbulancia/:ID_Contratacion/estado",updateContratacionEstado);
+router.put("/ContratacionRealizada/:ID_Contratacion",marcarContratacionRealizada);
 router.get("/tipoContratacion",getTipoContratacion);
 router.get('/ambulancias-disponiblesAdmin', getAvailableAmbulancesAdmin);
 router.get('/ambulancias-disponibles', getAvailableAmbulances);

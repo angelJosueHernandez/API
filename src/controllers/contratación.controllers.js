@@ -306,6 +306,47 @@ exports.updateContratacionEstado = async (req, res) => {
     }
 };
 
+// Actualiza estado en tbl_Contratacion_Ambulancia y Ambulancias
+exports.marcarContratacionRealizada = async (req, res) => {
+  const { ID_Contratacion } = req.params;
+
+  try {
+    console.log('Iniciando proceso de actualización...');
+    const pool = await getConnection();
+
+    // Actualizar el estado en tbl_Contratacion_Ambulancia
+    console.log('Actualizando estado de contratación a "realizada"...');
+    await pool.request()
+      .input('ID_Contratacion', sql.Int, ID_Contratacion)
+      .query('UPDATE tbl_Contratacion_Ambulancia SET estado = \'Realizada\' WHERE ID_Contratacion = @ID_Contratacion');
+
+    // Obtener el AmbulanciaID relacionado con la contratación
+    console.log('Obteniendo el AmbulanciaID...');
+    const ambulanciaResult = await pool.request()
+      .input('ID_Contratacion', sql.Int, ID_Contratacion)
+      .query('SELECT AmbulanciaID FROM tbl_Contratacion_Ambulancia WHERE ID_Contratacion = @ID_Contratacion');
+
+    const { AmbulanciaID } = ambulanciaResult.recordset[0];
+    if (!AmbulanciaID) {
+      return res.status(404).json({ error: 'No se encontró una ambulancia asociada a esta contratación' });
+    }
+
+    // Actualizar el estado de la ambulancia a "Disponible"
+    console.log('Actualizando EstadoActual de la ambulancia a "Disponible"...');
+    await pool.request()
+      .input('AmbulanciaID', sql.Int, AmbulanciaID)
+      .query('UPDATE Ambulancias SET EstadoActual = \'Disponible\' WHERE AmbulanciaID = @AmbulanciaID');
+
+    // Confirmar actualización exitosa
+    console.log('Estados actualizados correctamente.');
+    res.status(200).json({ message: 'Contratación marcada como realizada y ambulancia disponible' });
+
+  } catch (error) {
+    console.error('Error durante la actualización:', error);
+    res.status(500).json({ error: 'Error al actualizar los estados', details: error.message });
+  }
+};
+
 exports.getTipoContratacion = async (req, res)=> {
   try {
    const pool = await getConnection()
